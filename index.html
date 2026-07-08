@@ -167,7 +167,7 @@
       <svg viewBox="0 0 24 24"><path d="M12 2c1.9 3 3.3 4.4 6.3 5.3-.2 6.8-2.7 10.7-6.3 12.7-3.6-2-6.1-5.9-6.3-12.7C8.7 6.4 10.1 5 12 2z"/></svg>
     </div>
     <div class="titles">
-      <div class="eyebrow">Guide d'étude officiel — plus de 600 questions</div>
+      <div class="eyebrow">Guide d'étude officiel — plus de 570 questions</div>
       <h1>Découvrir le Canada — Entraînement</h1>
       <p>À chaque tentative, 20 questions sont tirées au hasard dans la banque du niveau. Réussis 15/20 pour débloquer le niveau suivant.</p>
     </div>
@@ -868,9 +868,20 @@ function renderHome(){
   app.innerHTML = html;
 }
 
+function shuffleOptions(question){
+  const order = [0,1,2,3];
+  for(let i=order.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [order[i],order[j]]=[order[j],order[i]];
+  }
+  const newOptions = order.map(i => question.o[i]);
+  const newCorrect = order.indexOf(question.c);
+  return {q:question.q, o:newOptions, c:newCorrect};
+}
+
 function startLevel(idx){
   currentLevelIndex = idx;
-  currentQuestions = shuffled(LEVELS[idx].questions).slice(0, TOTAL_QUESTIONS);
+  currentQuestions = shuffled(LEVELS[idx].questions).slice(0, TOTAL_QUESTIONS).map(shuffleOptions);
   currentIndex = 0;
   answers = new Array(currentQuestions.length).fill(null);
   timeLeft = TIME_LIMIT;
