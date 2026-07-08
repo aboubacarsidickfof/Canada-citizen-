@@ -1,0 +1,995 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Découvrir le Canada — Quiz de citoyenneté</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --parchment:#F3EEE1;
+    --parchment-deep:#EAE2CE;
+    --ink:#241F19;
+    --burgundy:#8C2A3B;
+    --burgundy-deep:#6E1F2C;
+    --navy:#1F2C49;
+    --gold:#AD8A3E;
+    --sage:#8E8C63;
+    --ok:#3F6E4A;
+    --bad:#8C2A3B;
+    --card-shadow: 0 1px 0 rgba(36,31,25,.06), 0 8px 24px rgba(36,31,25,.08);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background: var(--parchment);
+    background-image:
+      radial-gradient(circle at 12% 8%, rgba(140,42,59,0.05), transparent 40%),
+      radial-gradient(circle at 90% 90%, rgba(31,44,73,0.06), transparent 45%);
+    color: var(--ink);
+    font-family:'Source Sans 3', sans-serif;
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,.display{font-family:'Fraunces', serif;}
+  .wrap{max-width:980px;margin:0 auto;padding:36px 20px 80px;}
+
+  header.top{
+    display:flex;align-items:center;gap:20px;
+    border-bottom:2px solid var(--burgundy);
+    padding-bottom:22px;margin-bottom:34px;
+    position:relative;
+  }
+  .seal{
+    width:64px;height:64px;border-radius:50%;
+    background: conic-gradient(from 210deg, var(--gold), var(--burgundy) 35%, var(--gold) 70%, var(--burgundy) 100%);
+    display:flex;align-items:center;justify-content:center;flex:none;
+    box-shadow: inset 0 0 0 3px var(--parchment), inset 0 0 0 5px rgba(36,31,25,.25);
+  }
+  .seal svg{width:30px;height:30px;fill:var(--parchment);}
+  header.top .titles h1{font-size:1.7rem;margin:0;font-weight:600;letter-spacing:.2px;}
+  header.top .titles p{margin:4px 0 0;color:#54503f;font-size:.95rem;}
+  .eyebrow{
+    text-transform:uppercase;letter-spacing:.14em;font-size:.72rem;color:var(--burgundy);
+    font-weight:600;
+  }
+
+  .levels{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:20px;margin-top:20px;}
+  .level-card{
+    background:#fffdf8;border:1px solid #e4dcc4;border-radius:14px;
+    padding:22px 22px 20px;box-shadow:var(--card-shadow);
+    display:flex;flex-direction:column;gap:12px;position:relative;overflow:hidden;
+    transition:transform .18s ease;
+  }
+  .level-card.unlocked:hover{transform:translateY(-3px);}
+  .level-card.locked{opacity:.55;filter:grayscale(.4);}
+  .lvl-num{
+    font-family:'Fraunces',serif;font-size:2.1rem;color:var(--burgundy);line-height:1;font-weight:600;
+  }
+  .level-card h3{margin:0;font-size:1.08rem;font-weight:600;}
+  .level-card .desc{font-size:.86rem;color:#57523f;line-height:1.4;min-height:2.6em;}
+  .pool-size{font-size:.72rem;color:var(--gold);font-weight:600;letter-spacing:.02em;}
+  .status-row{display:flex;align-items:center;justify-content:space-between;margin-top:auto;}
+  .badge{
+    font-size:.74rem;font-weight:600;padding:4px 10px;border-radius:999px;
+    display:inline-flex;align-items:center;gap:6px;
+  }
+  .badge.pass{background:#e7efe6;color:var(--ok);}
+  .badge.fail{background:#f3e6e6;color:var(--bad);}
+  .badge.new{background:#efe8d6;color:var(--gold);}
+  .badge.locked{background:#e9e6da;color:#83806c;}
+  button.btn{
+    font-family:'Source Sans 3',sans-serif;font-weight:600;font-size:.9rem;
+    background:var(--burgundy);color:#fdf8ee;border:none;border-radius:9px;
+    padding:10px 16px;cursor:pointer;transition:background .15s ease;
+  }
+  button.btn:hover{background:var(--burgundy-deep);}
+  button.btn:disabled{background:#c9c2a8;cursor:not-allowed;}
+  button.btn.ghost{background:transparent;color:var(--navy);border:1.5px solid var(--navy);}
+  button.btn.ghost:hover{background:var(--navy);color:#fff;}
+
+  .quiz-header{
+    display:flex;align-items:center;justify-content:space-between;gap:20px;
+    margin-bottom:26px;flex-wrap:wrap;
+  }
+  .progress-track{
+    flex:1;min-width:180px;height:8px;background:#e6ddc4;border-radius:999px;overflow:hidden;
+  }
+  .progress-fill{height:100%;background:var(--burgundy);width:0%;transition:width .3s ease;}
+  .timer{
+    font-family:'Fraunces',serif;font-weight:600;font-size:1.3rem;
+    background:var(--navy);color:#fdf8ee;padding:8px 16px;border-radius:10px;
+    display:flex;align-items:center;gap:8px;min-width:108px;justify-content:center;
+  }
+  .timer.warn{background:var(--burgundy);}
+  .q-count{font-size:.85rem;color:#57523f;white-space:nowrap;}
+
+  .question-card{
+    background:#fffdf8;border:1px solid #e4dcc4;border-radius:16px;
+    padding:32px;box-shadow:var(--card-shadow);
+  }
+  .question-card h2{font-size:1.28rem;line-height:1.4;margin:0 0 26px;font-weight:600;}
+  .options{display:grid;gap:12px;}
+  .option{
+    text-align:left;border:1.5px solid #dcd3b6;border-radius:11px;background:#fbf8ef;
+    padding:14px 16px;font-size:.98rem;font-family:'Source Sans 3',sans-serif;
+    cursor:pointer;transition:border-color .15s ease, background .15s ease;
+    display:flex;gap:12px;align-items:flex-start;
+  }
+  .option:hover{border-color:var(--burgundy);}
+  .option .letter{
+    font-family:'Fraunces',serif;font-weight:600;color:var(--burgundy);flex:none;
+  }
+  .option.selected{border-color:var(--navy);background:#eef0f5;}
+  .option.correct{border-color:var(--ok);background:#e7efe6;}
+  .option.correct .letter{color:var(--ok);}
+  .option.incorrect{border-color:var(--bad);background:#f3e6e6;}
+  .option.incorrect .letter{color:var(--bad);}
+  .option:disabled{cursor:default;}
+  .quiz-footer{display:flex;justify-content:flex-end;margin-top:24px;}
+
+  .result{
+    background:#fffdf8;border:1px solid #e4dcc4;border-radius:18px;
+    padding:44px 36px;text-align:center;box-shadow:var(--card-shadow);
+  }
+  .stamp{
+    width:118px;height:118px;border-radius:50%;margin:0 auto 22px;
+    display:flex;align-items:center;justify-content:center;
+    border:4px solid currentColor;position:relative;
+    transform:rotate(-6deg);
+  }
+  .stamp.pass{color:var(--ok);}
+  .stamp.fail{color:var(--burgundy);}
+  .stamp::before{
+    content:'';position:absolute;inset:8px;border:1.5px dashed currentColor;border-radius:50%;
+  }
+  .stamp span{font-family:'Fraunces',serif;font-weight:700;font-size:.92rem;letter-spacing:.03em;}
+  .result h2{margin:0 0 8px;font-size:1.6rem;}
+  .result p.score{font-size:1.1rem;color:#3f3b30;margin:0 0 24px;}
+  .result-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;}
+
+  footer.credit{
+    text-align:center;color:#8b8770;font-size:.78rem;margin-top:50px;
+  }
+  @media (max-width:560px){
+    .wrap{padding:24px 14px 60px;}
+    header.top{gap:14px;}
+    .quiz-header{gap:12px;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="seal" aria-hidden="true">
+      <svg viewBox="0 0 24 24"><path d="M12 2c1.9 3 3.3 4.4 6.3 5.3-.2 6.8-2.7 10.7-6.3 12.7-3.6-2-6.1-5.9-6.3-12.7C8.7 6.4 10.1 5 12 2z"/></svg>
+    </div>
+    <div class="titles">
+      <div class="eyebrow">Guide d'étude officiel — plus de 600 questions</div>
+      <h1>Découvrir le Canada — Entraînement</h1>
+      <p>À chaque tentative, 20 questions sont tirées au hasard dans la banque du niveau. Réussis 15/20 pour débloquer le niveau suivant.</p>
+    </div>
+  </header>
+
+  <main id="app"></main>
+
+  <footer class="credit">Contenu basé sur « Découvrir le Canada : les droits et responsabilités liés à la citoyenneté », IRCC.</footer>
+</div>
+
+<script>
+/* ============================= DONNÉES ============================= */
+const LEVELS = [
+{
+  id:1,
+  title:"Le serment et les droits & responsabilités",
+  desc:"Le serment de citoyenneté, la Charte, les droits et responsabilités.",
+  questions:[
+    {q:"Dans le serment de citoyenneté, à qui les nouveaux citoyens jurent-ils fidélité ?",o:["Au drapeau canadien","Au premier ministre","À Sa Majesté (le roi ou la reine)","À la Cour suprême"],c:2},
+    {q:"Selon le serment, quel document les nouveaux citoyens s'engagent-ils à observer fidèlement ?",o:["Les lois du Canada, y compris la Constitution","Le Règlement sur la citoyenneté seulement","La Charte de la langue française","Le Code criminel seulement"],c:0},
+    {q:"En quelle année la Magna Carta (Grande Charte des libertés) a-t-elle été signée en Angleterre ?",o:["1215","1492","1608","1867"],c:0},
+    {q:"Quel droit, emprunté à la common law britannique, permet de contester une détention illégale par l'État ?",o:["Le droit de vote","L'habeas corpus","Le droit d'appel","La sanction royale"],c:1},
+    {q:"En quelle année la Constitution du Canada a-t-elle été modifiée pour inclure la Charte canadienne des droits et libertés ?",o:["1867","1931","1982","1995"],c:2},
+    {q:"Quelles sont les deux langues officielles du Canada ?",o:["Le français et l'anglais","L'anglais et le mandarin","Le français et le gaélique","L'anglais et l'inuktitut"],c:0},
+    {q:"Quelle caractéristique fondamentale de l'identité canadienne concerne le fait de vivre ensemble en harmonie malgré la diversité ?",o:["Le fédéralisme","Le multiculturalisme","Le bilinguisme institutionnel","La souveraineté parlementaire"],c:1},
+    {q:"Laquelle des réponses suivantes N'EST PAS une responsabilité liée à la citoyenneté ?",o:["Respecter les lois","Répondre à ses propres besoins et à ceux de sa famille","Recycler le papier journal","Faire partie d'un jury si on vous le demande"],c:2},
+    {q:"Que doit faire un citoyen lorsqu'on lui demande de faire partie d'un jury ?",o:["Il peut refuser librement","La loi l'y oblige","Seuls les avocats peuvent être jurés","C'est réservé aux plus de 55 ans"],c:1},
+    {q:"Que rejette explicitement le guide au nom de l'égalité entre les femmes et les hommes ?",o:["Le vote des femmes","Les pratiques comme les mariages forcés ou la violence fondée sur le sexe","L'accès des femmes à l'éducation","Le travail des femmes"],c:1},
+    {q:"Le service militaire est-il obligatoire au Canada ?",o:["Oui, pour tous les citoyens","Oui, mais seulement pour les hommes","Non, il n'est pas obligatoire","Oui, à partir de 18 ans"],c:2},
+    {q:"Comment appelle-t-on l'ensemble formé par la Marine, l'Armée de terre et la Force aérienne ?",o:["La Gendarmerie royale du Canada","Les Forces canadiennes","La Milice territoriale","Les Rangers canadiens"],c:1},
+    {q:"Quelle responsabilité concerne le fait d'éviter le gaspillage et la pollution ?",o:["Protéger notre patrimoine et notre environnement","Voter aux élections","Faire partie d'un jury","Défendre le Canada"],c:0},
+    {q:"Un des privilèges de la citoyenneté canadienne est :",o:["Le droit de vote","L'exemption de tout impôt","Le droit de ne jamais être juré","La double nationalité automatique"],c:0},
+    {q:"Que doivent adopter les nouveaux arrivants lorsqu'ils deviennent citoyens canadiens, quelles que soient leurs expériences passées ?",o:["Une langue unique imposée","Les principes démocratiques, notamment la primauté du droit","Une religion d'État","Un serment militaire"],c:1},
+    {q:"Selon le guide, l'examen pour la citoyenneté évalue deux critères fondamentaux : la connaissance du Canada et...",o:["La connaissance suffisante du français ou de l'anglais","Un casier judiciaire vierge","Un niveau universitaire","Un test médical"],c:0},
+    {q:"À partir de quel âge les candidats adultes n'ont-ils pas besoin de passer l'examen pour la citoyenneté ?",o:["45 ans","50 ans","55 ans","65 ans"],c:2},
+    {q:"Que reçoit-on si on réussit l'examen et qu'on remplit toutes les conditions ?",o:["Un avis de convocation pour prêter le serment de citoyenneté","Un passeport immédiat","Une carte d'électeur","Un permis de travail"],c:0},
+    {q:"Que fait-on au cours de la cérémonie de citoyenneté ?",o:["On signe le formulaire du serment et on reçoit le certificat de citoyenneté","On passe un examen médical","On rencontre le gouverneur général en personne obligatoirement","On paie une taxe finale"],c:0},
+    {q:"D'où viennent les règles juridiques du Canada, selon le guide ?",o:["Uniquement des lois fédérales","Des lois du Parlement et des provinces, de la common law, du code civil français et de la tradition constitutionnelle britannique","Uniquement de la common law britannique","Des traités internationaux seulement"],c:1},
+    {q:"Que garantit la Charte concernant la liberté de circulation ?",o:["Vivre et travailler n'importe où au Canada, entrer et sortir librement, demander un passeport","Le droit de vote à 16 ans","L'exemption fiscale","La double citoyenneté automatique"],c:0},
+    {q:"Quel droit garantit que les droits ancestraux ou issus de traités des peuples autochtones ne sont pas affectés par la Charte ?",o:["Les droits des peuples autochtones","Le droit de vote","L'habeas corpus","Le droit de propriété"],c:0},
+    {q:"Que garantissent les droits linguistiques dans la Charte canadienne ?",o:["Le statut égal du français et de l'anglais au Parlement et dans le gouvernement","La primauté de l'anglais","La primauté du français au Québec seulement","L'usage exclusif du français à l'ouest du Canada"],c:0},
+    {q:"D'où proviennent les règles juridiques du Canada, en plus des lois fédérales et provinciales ?",o:["La common law, le code civil français et la tradition britannique","Uniquement le droit romain","Uniquement les traités internationaux","Le droit coutumier autochtone exclusivement"],c:0},
+    {q:"Quelle liberté fondamentale inclut la liberté de la presse ?",o:["La liberté de pensée, de croyance, d'opinion et d'expression","La liberté de circulation","La liberté d'association uniquement","Le droit de vote"],c:0},
+    {q:"Que dit le préambule de la Charte canadienne à propos des principes fondateurs du Canada ?",o:["Il reconnaît la suprématie de Dieu et la primauté du droit","Il proclame la neutralité religieuse totale de l'État","Il abolit toute référence religieuse","Il instaure une république laïque"],c:0},
+    {q:"Quelles pratiques culturelles sont explicitement rejetées au nom de l'égalité hommes-femmes, selon le guide ?",o:["La mutilation sexuelle des femmes, les mariages forcés, les « meurtres d'honneur »","Le port de tout vêtement traditionnel","La pratique religieuse privée","La cuisine traditionnelle"],c:0},
+    {q:"Quelle organisation de jeunes permet d'acquérir discipline et compétences, selon le guide ?",o:["Les Cadets","Les Scouts uniquement","La Croix-Rouge","Le Corps de cadets de l'air seulement"],c:0},
+    {q:"Par quel site Web peut-on trouver de l'information sur les Forces canadiennes, selon le guide ?",o:["www.forces.ca","www.cic.gc.ca","www.rcmp-grc.gc.ca","www.veterans.gc.ca"],c:0},
+    {q:"Quelle formation permet de travailler à temps partiel dans la marine ou l'aviation, selon le guide ?",o:["La Réserve navale ou aérienne","L'armée active seulement","La Gendarmerie royale du Canada","Le Corps expéditionnaire"],c:0},
+    {q:"Quels services d'urgence locaux un citoyen peut-il rejoindre pour contribuer à la protection de sa communauté ?",o:["Le service de police ou les pompiers","Uniquement l'armée","Uniquement la Garde côtière fédérale","Uniquement les tribunaux"],c:0},
+    {q:"Qu'est-ce que le bénévolat permet d'acquérir, selon le guide ?",o:["Des compétences utiles, des amis et des relations","Uniquement un revenu supplémentaire","Un crédit d'impôt garanti","Une exemption d'examen de citoyenneté"],c:0},
+    {q:"Quel est le rôle des jurys dans le système judiciaire, selon le guide ?",o:["Assurer l'impartialité et la participation des citoyens au système judiciaire","Remplacer les juges","Voter les lois fédérales","Nommer les avocats de la défense"],c:0},
+    {q:"Quelles valeurs le guide associe-t-il à la prospérité bâtie par les Canadiens dans un climat rigoureux ?",o:["Le travail acharné, l'esprit d'entreprise, l'honnêteté, le désir de liberté ordonnée","La richesse naturelle uniquement","L'isolement géographique","La proximité avec les États-Unis uniquement"],c:0},
+    {q:"Que conseille le guide pour se préparer aux questions de l'examen de citoyenneté ?",o:["Demander à un ami ou un membre de la famille de poser des questions sur le Canada","Mémoriser uniquement les dates","Ne réviser que la géographie","Suivre uniquement des cours en ligne payants"],c:0},
+    {q:"Qui offre des cours de français ou d'anglais gratuits aux nouveaux arrivants, selon le guide ?",o:["Le gouvernement du Canada","Uniquement les organismes privés","Uniquement les universités","Uniquement les municipalités"],c:0},
+    {q:"Sous quelle forme l'examen de citoyenneté peut-il se dérouler, en plus de l'écrit ?",o:["Une entrevue","Un test en ligne uniquement","Un essai rédigé","Une présentation orale devant public"],c:0},
+    {q:"Que se passe-t-il si un candidat échoue à l'examen de citoyenneté ?",o:["Il reçoit un avis indiquant les étapes suivantes","Sa demande est automatiquement rejetée à vie","Il doit quitter le pays","Il perd son statut de résident permanent"],c:0},
+    {q:"Quel document officiel fournit de l'information sur l'évaluation du critère de connaissance du Canada ?",o:["Le Règlement sur la citoyenneté","Le Code criminel","La Charte de la langue française","La Loi sur l'immigration"],c:0},
+    {q:"Quel est le seul guide d'étude officiel reconnu pour l'examen de citoyenneté, selon l'avis du guide ?",o:["Découvrir le Canada","Le Petit Larousse illustré","L'Encyclopédie canadienne","Un portrait du Canada"],c:0},
+    {q:"Qui délivre gratuitement le guide officiel de préparation à la citoyenneté ?",o:["Citoyenneté et Immigration Canada","Une maison d'édition privée","Les provinces","Les municipalités"],c:0},
+    {q:"Quelle attitude collective les Canadiens doivent-ils démontrer face au pluralisme, selon le guide ?",o:["Respecter le pluralisme et vivre en harmonie","Uniformiser toutes les cultures","Privilégier une seule culture dominante","Ignorer les différences culturelles"],c:0},
+    {q:"Quels types de lois régissent les provinces, en plus des lois fédérales ?",o:["Les lois adoptées par les assemblées législatives provinciales","Uniquement des règlements municipaux","Uniquement des décrets du gouverneur général","Uniquement la common law"],c:0},
+    {q:"Quelle est la durée de la tradition de liberté ordonnée mentionnée dans le guide ?",o:["Environ 800 ans","Environ 200 ans","Environ 50 ans","Environ 1000 ans"],c:0},
+    {q:"Quel principe britannique garantit qu'aucune personne n'est détenue arbitrairement par l'État ?",o:["L'habeas corpus","La sanction royale","Le fédéralisme","La primauté parlementaire"],c:0},
+    {q:"Quelles quatre libertés fondamentales sont énumérées dans le guide, avant la Charte de 1982 ?",o:["Conscience et religion; pensée, croyance, opinion, expression; réunion pacifique; association","Vote, travail, propriété, mariage","Éducation, santé, logement, transport","Expression, religion, propriété, vote"],c:0},
+    {q:"Quel est le critère d'âge général qui exempte un candidat de passer l'examen écrit de citoyenneté ?",o:["55 ans et plus","65 ans et plus","50 ans et plus","Aucune exemption d'âge n'existe"],c:0},
+    {q:"Que signifie concrètement « répondre à ses propres besoins et à ceux de sa famille », selon le guide ?",o:["Avoir un emploi, prendre soin de sa famille, mettre ses habiletés à contribution","Vivre uniquement de l'aide sociale","Dépendre exclusivement de sa communauté d'origine","Refuser tout travail rémunéré"],c:0},
+    {q:"Quel sentiment le travail et la contribution personnelle procurent-ils, selon le guide ?",o:["Un sentiment de dignité personnelle et d'estime de soi","Uniquement un revenu","Une reconnaissance officielle du gouvernement","Une exemption d'impôt"],c:0},
+    {q:"Quel est le rôle du bénévolat dans l'intégration des nouveaux arrivants, selon le guide ?",o:["Encourager les nouveaux arrivants à s'intégrer","Remplacer les services gouvernementaux","Éviter de payer des impôts","Obtenir la citoyenneté plus rapidement"],c:0},
+    {q:"Quelles professions d'urgence locales sont mentionnées comme façon de « défendre » sa communauté ?",o:["Le service de police et les pompiers","Uniquement l'armée régulière","Uniquement la diplomatie","Uniquement la magistrature"],c:0},
+    {q:"Quel organisme peut-on rejoindre bénévolement pour offrir main-forte à une banque alimentaire ?",o:["Un organisme de bienfaisance","Une agence gouvernementale fédérale uniquement","Un syndicat","Un parti politique"],c:0},
+    {q:"Quelle est la structure des sources du droit canadien selon le guide (au moins quatre origines) ?",o:["Lois du Parlement, lois provinciales, common law, code civil français, tradition britannique","Uniquement la Constitution de 1867","Uniquement le droit international","Uniquement les décisions de la Cour suprême"],c:0},
+    {q:"Que signifie « primauté du droit » dans le contexte canadien ?",o:["Aucune personne ni groupe n'est au-dessus des lois","Seuls les juges peuvent créer des lois","Le premier ministre peut ignorer les lois","Les lois provinciales priment toujours sur les lois fédérales"],c:0},
+    {q:"Quel est le message central adressé aux nouveaux arrivants provenant de zones de conflit, selon le guide ?",o:["Ne pas transposer de préjugés violents ou haineux au Canada","Conserver leurs conflits d'origine","Éviter tout contact avec d'autres communautés","Refuser d'apprendre une langue officielle"],c:0},
+    {q:"Selon le guide, à quoi l'égalité de traitement garantie par la loi canadienne donne-t-elle notamment accès pour les couples de même sexe ?",o:["Le mariage civil","Uniquement l'union de fait","Uniquement des droits limités","Aucun droit particulier"],c:0},
+    {q:"Quel est le rôle du Télécentre pendant le traitement d'une demande de citoyenneté ?",o:["Conserver l'adresse exacte du demandeur","Faire passer l'examen de citoyenneté","Délivrer le passeport","Organiser la cérémonie de citoyenneté"],c:0},
+    {q:"Combien de critères fondamentaux d'attribution de la citoyenneté sont évalués à l'examen, selon le guide ?",o:["Deux","Trois","Quatre","Un seul"],c:0},
+    {q:"Quel est le premier des deux critères fondamentaux évalués à l'examen de citoyenneté ?",o:["La connaissance du Canada et des droits/responsabilités liés à la citoyenneté","La connaissance de l'histoire mondiale","La maîtrise du droit international","La connaissance de la géographie mondiale"],c:0},
+    {q:"Quel est le second critère fondamental évalué à l'examen de citoyenneté ?",o:["La connaissance suffisante du français ou de l'anglais","La maîtrise d'une troisième langue","Un diplôme universitaire","Un test de citoyenneté numérique"],c:0},
+    {q:"Que doit faire un nouvel arrivant pour se renseigner sur les cours de préparation à la citoyenneté offerts localement ?",o:["Contacter une école, un collège, un centre communautaire ou un organisme d'aide aux immigrants","Attendre une convocation automatique","S'inscrire uniquement en ligne","Contacter uniquement une ambassade"],c:0},
+    {q:"Quel est un exemple de responsabilité liée à l'entraide sociale mentionnée dans le Règlement sur la citoyenneté ?",o:["Offrir de l'aide aux membres de la communauté","Payer des impôts fédéraux seulement","Voter uniquement aux élections municipales","Apprendre le droit criminel"],c:0},
+    {q:"Que décrit l'article 15 du Règlement sur la citoyenneté concernant la « connaissance suffisante du Canada » ?",o:["Histoire politique/militaire, histoire sociale/culturelle, géographie, système politique","Uniquement la géographie physique","Uniquement l'histoire militaire","Uniquement les symboles nationaux"],c:0},
+    {q:"Que doit démontrer une personne selon l'article 15(2) du Règlement concernant les responsabilités liées à la citoyenneté ?",o:["La participation au processus démocratique, à la société, le respect des droits et libertés","Uniquement le paiement de ses impôts","Uniquement la maîtrise de la langue","Uniquement l'appartenance à un parti politique"],c:0},
+    {q:"Quel article de la Loi sur la citoyenneté impose la connaissance suffisante du Canada pour l'attribution de la citoyenneté ?",o:["L'article 5(1)e)","L'article 1er","L'article 10","L'article 91"],c:0},
+    {q:"Quelle institution est responsable de fournir des services en français et en anglais partout au Canada, selon le guide ?",o:["Le gouvernement fédéral","Uniquement le Québec","Uniquement l'Ontario","Uniquement les municipalités"],c:0},
+    {q:"Quel principe canadien empêche qu'une personne soit jugée coupable sans procès équitable ?",o:["L'application régulière de la loi","La sanction royale","Le fédéralisme","La souveraineté parlementaire"],c:0},
+    {q:"Quelles sont les deux sources historiques directes de la tradition juridique canadienne évoquées avec la Grande-Bretagne et la France ?",o:["La common law et le code civil","Le droit romain et le droit canon","Le droit coutumier autochtone et le droit international","La charia et le droit romain"],c:0},
+    {q:"Quel document est cité par le guide comme ayant inscrit la liberté de conscience et de religion dans la tradition britannique, il y a environ 800 ans ?",o:["La Magna Carta","L'Acte de Québec","La Charte de 1982","L'Acte de l'Amérique du Nord britannique"],c:0},
+    {q:"Quel est le sens de « porter sincère allégeance » dans le serment de citoyenneté ?",o:["Promettre fidélité loyale à la Couronne et aux lois du Canada","Promettre de ne jamais quitter le pays","Promettre de voter pour un parti précis","Promettre de servir dans l'armée"],c:0},
+    {q:"Quelles obligations le nouveau citoyen promet-il de remplir « loyalement » selon le serment ?",o:["Ses obligations de citoyen canadien","Ses obligations militaires uniquement","Ses obligations fiscales uniquement","Ses obligations envers son pays d'origine"],c:0},
+    {q:"Quel principe est souligné par le fait de jurer fidélité à une personne plutôt qu'à un drapeau ou à un territoire, selon le guide ?",o:["La souveraine personnifie le Canada, symbole d'unité au-delà des symboles matériels","Le drapeau canadien n'a aucune valeur symbolique","Le territoire canadien n'a pas de frontières fixes","Le Canada n'a pas de symboles nationaux"],c:0},
+    {q:"Quelle est l'origine des « droits ancestraux » mentionnés dans le serment de citoyenneté ?",o:["Les droits des Premières Nations, des Inuits et des Métis reconnus par la Constitution","Les droits des premiers colons français uniquement","Les droits des loyalistes uniquement","Les droits acquis par les nouveaux immigrants"],c:0},
+    {q:"Quel est le nom donné à l'ensemble des droits et libertés protégés par la loi canadienne qui reflètent les traditions du pays ?",o:["Les droits et responsabilités liés à la citoyenneté","Les droits d'auteur","Les droits de douane","Les droits municipaux"],c:0},
+    {q:"Depuis quand la liberté de conscience et de religion est-elle protégée dans la tradition canadienne, selon le guide ?",o:["Depuis environ 800 ans (1215)","Depuis 1867 seulement","Depuis 1982 seulement","Depuis la Seconde Guerre mondiale"],c:0},
+    {q:"Que représente le souverain (reine ou roi) au sein du Parlement, selon la section sur les droits et le gouvernement ?",o:["Le chef d'État, symbole de continuité constitutionnelle","Le chef du gouvernement qui dirige le pays au quotidien","Un simple symbole sans lien avec le Parlement","Le chef du parti au pouvoir"],c:0},
+    {q:"Quels domaines sont mentionnés comme relevant du bénévolat, en plus de l'aide aux personnes dans le besoin ?",o:["Aider à l'école, dans une banque d'alimentation, accueillir les nouveaux arrivants","Uniquement des activités sportives","Uniquement des collectes de fonds politiques","Uniquement des activités religieuses"],c:0},
+    {q:"Que garantit concrètement le droit de « demander un passeport canadien » ?",o:["Il découle de la liberté de circulation et d'établissement","Il est accordé uniquement après 10 ans de citoyenneté","Il nécessite l'accord du gouverneur général","Il est réservé aux citoyens nés au Canada"],c:0},
+    {q:"Quelle est la conséquence si un citoyen refuse, sans motif valable, de faire partie d'un jury ?",o:["Il enfreint une obligation légale","Aucune conséquence, c'est facultatif","Il perd sa citoyenneté","Il doit payer une taxe supplémentaire"],c:0},
+    {q:"Quel est le lien entre « dignité personnelle » et « prospérité du Canada », selon le guide ?",o:["Le travail acharné procure dignité personnelle et contribue à la prospérité collective","Il n'existe aucun lien mentionné","La prospérité dépend uniquement des ressources naturelles","La dignité personnelle dépend uniquement du revenu"],c:0},
+    {q:"Quelle institution fédérale est chargée de traiter les demandes de citoyenneté et de vérifier l'admissibilité ?",o:["Citoyenneté et Immigration Canada","La Cour suprême","Le Sénat","Statistique Canada"],c:0},
+    {q:"Quel est le rôle du Télécentre pendant le traitement de la demande, selon le guide ?",o:["Transmettre les mises à jour et vérifier l'adresse du demandeur","Faire passer l'entrevue de citoyenneté","Organiser le transport du demandeur","Délivrer le certificat final"],c:0},
+    {q:"Quel est le message central adressé aux « nouveaux Canadiens » dans le mot de bienvenue du guide ?",o:["Ils s'inscrivent dans une tradition de pionniers qui ont bâti le pays","Ils doivent renoncer à leur culture d'origine","Ils n'ont aucune responsabilité avant la cérémonie","Ils doivent d'abord maîtriser le droit criminel"],c:0},
+    {q:"Quelle attente est formulée envers les nouveaux arrivants concernant les principes démocratiques ?",o:["Les adopter pleinement en devenant citoyens","Les ignorer s'ils viennent d'un régime non démocratique","Les appliquer uniquement lors des élections","Les remplacer par leurs propres traditions"],c:0},
+    {q:"Quel est le sens du mot « primauté » dans l'expression « primauté du droit » ?",o:["La loi est au-dessus de tous, y compris les gouvernements","Seule la police applique la loi","Le droit est secondaire face à la coutume","La loi ne s'applique qu'aux citoyens nés au Canada"],c:0},
+    {q:"Que signifie concrètement le droit à la liberté d'association garanti dans la tradition canadienne ?",o:["Le droit de se regrouper librement (syndicats, associations, etc.)","Le droit de créer un parti unique","Le droit de refuser toute association civile","Le droit de dissoudre les syndicats"],c:0},
+    {q:"Quelle est la portée de la liberté de réunion pacifique au Canada, selon le guide ?",o:["Le droit de se rassembler pacifiquement sans autorisation arbitraire de l'État","Le droit de manifester uniquement avec armes","Le droit réservé aux partis politiques","Le droit limité aux jours fériés"],c:0},
+    {q:"Que retient-on de la phrase du préambule de la Charte évoquant « la suprématie de Dieu et la primauté du droit » ?",o:["Elle souligne l'importance des traditions religieuses et de la dignité humaine","Elle impose une religion d'État","Elle abolit toute liberté de religion","Elle ne concerne que le Québec"],c:0},
+    {q:"Quels groupes sont explicitement protégés par la clause sur les droits autochtones de la Charte ?",o:["Les Premières Nations, les Inuits et les Métis","Uniquement les Premières Nations","Uniquement les Métis","Uniquement les Inuits du Nunavut"],c:0},
+    {q:"Quelle est l'obligation légale rattachée au fait d'être choisi comme juré au Canada ?",o:["Se présenter et participer, sauf exemption légale","Payer une amende pour être dispensé","Refuser si on le souhaite sans conséquence","Se faire remplacer par un avocat"],c:0},
+    {q:"Quelle formule résume le mieux la responsabilité de « protéger notre patrimoine et notre environnement » ?",o:["Éviter le gaspillage et la pollution, protéger le patrimoine naturel, culturel et architectural","Uniquement recycler le verre","Uniquement planter des arbres","Uniquement réduire sa consommation d'eau"],c:0},
+    {q:"Quel est le rôle du bénévolat dans l'acquisition de compétences selon le guide ?",o:["C'est un excellent moyen d'acquérir des compétences utiles et de se faire des amis","Il ne procure aucun avantage concret","Il remplace l'expérience professionnelle rémunérée","Il est obligatoire pour obtenir la citoyenneté"],c:0},
+    {q:"Quelle formule résume le mieux le lien entre droits et responsabilités selon le guide ?",o:["Au Canada, les droits s'accompagnent de responsabilités","Les droits existent sans aucune contrepartie","Seules les responsabilités sont mentionnées dans la Charte","Les droits priment toujours sur les responsabilités"],c:0}
+  ]
+},
+{
+  id:2,
+  title:"Des origines à la Confédération",
+  desc:"Peuples autochtones, exploration, Nouvelle-France, gouvernement responsable.",
+  questions:[
+    {q:"Quels sont les trois peuples fondateurs du Canada, selon le guide ?",o:["Les Autochtones, les Français et les Britanniques","Les Français, les Espagnols et les Britanniques","Les Vikings, les Français et les Autochtones","Les Britanniques, les Irlandais et les Autochtones"],c:0},
+    {q:"D'où pense-t-on que sont venus les ancêtres des peuples autochtones il y a plusieurs milliers d'années ?",o:["D'Europe","D'Asie","D'Afrique","D'Océanie"],c:1},
+    {q:"Quelle proclamation royale de 1763 a établi les bases de la négociation des traités avec les Autochtones ?",o:["La Proclamation royale de George III","L'Acte de Québec","L'Acte constitutionnel","La Loi sur les Indiens"],c:0},
+    {q:"Des années 1800 aux années 1980, qu'a fait le gouvernement fédéral pour « instruire et assimiler » les enfants autochtones ?",o:["Il les a exemptés d'éducation","Il les a placés dans des pensionnats","Il leur a offert des bourses d'études","Il a créé des écoles bilingues volontaires"],c:1},
+    {q:"En quelle année Ottawa a-t-il présenté des excuses officielles aux anciens élèves des pensionnats indiens ?",o:["1998","2008","1982","2015"],c:1},
+    {q:"Qui sont les Métis, selon le guide ?",o:["Des immigrants européens récents","Un peuple distinct né de l'union d'Autochtones et d'Européens","Un sous-groupe des Inuits","Des descendants uniquement français"],c:1},
+    {q:"Quelle langue distincte parlent traditionnellement les Métis ?",o:["Le michif","Le cri","L'inuktitut","Le gaélique"],c:0},
+    {q:"Que signifie le mot « Inuit » ?",o:["« Le peuple » en inuktitut","« La terre gelée »","« Les chasseurs »","« Ceux du Nord »"],c:0},
+    {q:"Quel explorateur, Italien au service de l'Angleterre, a tracé la première carte de la côte est du Canada en 1497 ?",o:["Jacques Cartier","Jean Cabot","Samuel de Champlain","Martin Frobisher"],c:1},
+    {q:"Qui a exploré le fleuve Saint-Laurent entre 1534 et 1542, entendant le mot iroquois « kanata » ?",o:["Jacques Cartier","Jean Cabot","Samuel de Champlain","Étienne Brûlé"],c:0},
+    {q:"Que signifie le mot iroquois « kanata », à l'origine du nom du Canada ?",o:["« Village »","« Grande rivière »","« Terre du froid »","« Peuple libre »"],c:0},
+    {q:"Qui a fondé la ville de Québec en 1608 ?",o:["Samuel de Champlain","Jacques Cartier","Jean Talon","Le comte de Frontenac"],c:0},
+    {q:"Quelle bataille de 1759, à Québec, marque la fin de l'Empire français en Amérique du Nord ?",o:["La bataille de Vimy","La bataille des plaines d'Abraham","La bataille de Châteauguay","La bataille de Queenston Heights"],c:1},
+    {q:"Quel acte de 1774 accorde la liberté religieuse aux catholiques de la province de Québec ?",o:["L'Acte de Québec","L'Acte constitutionnel","L'Acte de l'Amérique du Nord britannique","La Loi sur les langues officielles"],c:0},
+    {q:"Qui sont les « loyalistes de l'Empire-Uni » arrivés après 1776 ?",o:["Des colons français royalistes","Des personnes fidèles à la Couronne fuyant la Révolution américaine","Des soldats britanniques en retraite","Des marchands hollandais"],c:1},
+    {q:"Quelle colonie de l'Empire britannique a été la première à prendre le virage de l'abolition de l'esclavage, en 1793 ?",o:["Le Bas-Canada","Le Haut-Canada","La Nouvelle-Écosse","Terre-Neuve"],c:1},
+    {q:"En quelle année le Parlement britannique a-t-il aboli l'esclavage dans tout l'Empire ?",o:["1807","1833","1867","1901"],c:1},
+    {q:"Quel acte de 1791 divise la province de Québec en Haut-Canada et Bas-Canada ?",o:["L'Acte de Québec","L'Acte constitutionnel de 1791","L'Acte de l'Amérique du Nord britannique","L'Acte de l'Union"],c:1},
+    {q:"Qui devient, en 1849, le premier chef d'un gouvernement responsable des deux Canadas ?",o:["Sir Louis-Hippolyte La Fontaine","Sir John A. Macdonald","Lord Durham","Robert Baldwin"],c:0},
+    {q:"En quelle année a eu lieu la Confédération canadienne ?",o:["1759","1812","1867","1931"],c:2},
+    {q:"Où les Vikings ont-ils établi une colonie il y a environ 1000 ans, reconnue comme site du patrimoine mondial ?",o:["L'Anse aux Meadows, à Terre-Neuve","L'île de Vancouver","La baie de Fundy","Le détroit de Belle Isle"],c:0},
+    {q:"Quels territoires les Vikings ont-ils atteints en plus du Groenland, selon le guide ?",o:["Le Labrador et l'île de Terre-Neuve","La Nouvelle-Écosse et le Québec","L'Ontario et le Manitoba","La Colombie-Britannique"],c:0},
+    {q:"En quelle année les Anglais ont-ils commencé à s'établir à Terre-Neuve, après le passage de Jean Cabot en 1497 ?",o:["1610","1497","1608","1667"],c:0},
+    {q:"Qui a fondé, avec Samuel de Champlain, le premier établissement européen en Acadie, en 1604 ?",o:["Pierre de Monts","Jean Talon","Le comte de Frontenac","Monseigneur de Laval"],c:0},
+    {q:"Où se trouvait le tout premier établissement fondé par de Monts et Champlain, aujourd'hui aux États-Unis ?",o:["L'île Sainte-Croix, dans le Maine actuel","L'île de Manhattan","La baie de Chesapeake","Le lac Champlain"],c:0},
+    {q:"Avec quels peuples autochtones Champlain s'est-il allié contre les Iroquois ?",o:["Les Algonquins, les Montagnais et les Hurons","Les Sioux et les Cris","Les Inuits et les Dénés","Les Micmacs uniquement"],c:0},
+    {q:"En quelle année les Français et les Iroquois ont-ils conclu la paix, selon le guide ?",o:["1701","1608","1759","1667"],c:0},
+    {q:"Comment appelle-t-on les hommes qui se déplaçaient en canot pour faire la traite des fourrures ?",o:["Les voyageurs ou coureurs des bois","Les habitants","Les seigneurs","Les censitaires"],c:0},
+    {q:"Quels dirigeants sont cités comme ayant bâti l'empire français en Amérique du Nord, de la baie d'Hudson au golfe du Mexique ?",o:["Jean Talon, Monseigneur de Laval et le comte de Frontenac","Champlain, Cartier et Cabot","La Fontaine, Baldwin et Elgin","Macdonald, Cartier et Tilley"],c:0},
+    {q:"En quelle année le roi Charles II d'Angleterre a-t-il accordé l'exclusivité du commerce du bassin de la baie d'Hudson à la Compagnie de la Baie d'Hudson ?",o:["1670","1608","1701","1759"],c:0},
+    {q:"Quels postes de traite deviendront plus tard Winnipeg et Edmonton, selon le guide ?",o:["Fort Garry et Fort Edmonton","Fort Langley et Fort Victoria","Fort Calgary et Fort Henry","Fort York et Fort Rouge"],c:0},
+    {q:"Quels généraux britannique et français sont morts lors de la bataille des plaines d'Abraham en 1759 ?",o:["Le général James Wolfe et le marquis de Montcalm","Isaac Brock et Tecumseh","Robert Ross et Charles de Salaberry","Sir Sam Steele et Louis Riel"],c:0},
+    {q:"Quelles règles juridiques l'Acte de Québec de 1774 met-il en place pour les affaires civiles et criminelles ?",o:["Le droit civil français pour le civil, le droit anglais pour le criminel","Le droit anglais pour tout","Le droit civil français pour tout","Le droit autochtone pour tout"],c:0},
+    {q:"En quelle année les treize colonies britanniques ont-elles proclamé leur indépendance, formant les États-Unis ?",o:["1776","1812","1759","1867"],c:0},
+    {q:"Combien de personnes fidèles à la Couronne (loyalistes) ont fui vers le Canada après la Révolution américaine, selon le guide ?",o:["Plus de 40 000","Plus de 4 000","Plus de 400 000","Plus de 4 millions"],c:0},
+    {q:"Qui a conduit des milliers d'Indiens mohawks loyalistes vers le Canada ?",o:["Joseph Brant","Tecumseh","Louis Riel","Sir Sam Steele"],c:0},
+    {q:"Environ combien de loyalistes noirs (esclaves ou affranchis) sont venus s'établir au Canada à cette époque, selon le guide ?",o:["Environ 3 000","Environ 300","Environ 30 000","Environ 300 000"],c:0},
+    {q:"Où certains loyalistes noirs se sont-ils rendus en 1792 pour fonder une colonie britannique destinée aux esclaves affranchis ?",o:["À Freetown, en Sierra Leone","À Kingston, en Jamaïque","À Halifax, en Nouvelle-Écosse","À Boston, aux États-Unis"],c:0},
+    {q:"Où la toute première assemblée de représentants élus de l'Amérique du Nord britannique a-t-elle été élue, en 1758 ?",o:["À Halifax, en Nouvelle-Écosse","À Québec","À York (Toronto)","À Charlottetown"],c:0},
+    {q:"En quelle année l'Île-du-Prince-Édouard a-t-elle obtenu sa première assemblée élue, selon le guide ?",o:["1773","1758","1785","1791"],c:0},
+    {q:"En quelle année le Nouveau-Brunswick a-t-il obtenu sa première assemblée élue ?",o:["1785","1773","1758","1867"],c:0},
+    {q:"Quel acte de 1791 accorde pour la première fois aux deux Canadas des assemblées législatives élues par la population ?",o:["L'Acte constitutionnel","L'Acte de Québec","L'Acte de l'Union","L'Acte de l'Amérique du Nord britannique"],c:0},
+    {q:"Comment appelait-on collectivement les colonies de la côte atlantique et les deux Canadas, selon le guide ?",o:["L'Amérique du Nord britannique","La Nouvelle-France","Le Dominion uni","La Confédération atlantique"],c:0},
+    {q:"Qui est le premier lieutenant-gouverneur du Haut-Canada et fondateur de la ville de York (Toronto) ?",o:["John Graves Simcoe","Isaac Brock","Lord Durham","Lord Elgin"],c:0},
+    {q:"Grâce à qui le Haut-Canada devient-il, en 1793, la première colonie de l'Empire britannique à amorcer l'abolition de l'esclavage ?",o:["John Graves Simcoe","Mary Ann Shadd Cary","Robert Baldwin","Joseph Howe"],c:0},
+    {q:"En quelle année le Parlement britannique interdit-il la vente et l'achat d'esclaves (traite transatlantique) ?",o:["1807","1793","1833","1867"],c:0},
+    {q:"Quelle expression désigne le réseau chrétien antiesclavagiste qui a aidé des esclaves américains à fuir vers le Canada ?",o:["Le chemin de fer clandestin","Le sentier de la liberté","La route du Nord","Le passage vers la liberté"],c:0},
+    {q:"Quelle étoile guidait symboliquement les esclaves fuyant vers le Canada, selon le guide ?",o:["L'étoile du Nord","L'étoile polaire du Sud","La Croix du Sud","L'étoile de Bethléem"],c:0},
+    {q:"Qui devient, en 1853, la première éditrice au Canada, avec le journal The Provincial Freeman ?",o:["Mary Ann Shadd Cary","Laura Secord","Agnes Macphail","Emily Stowe"],c:0},
+    {q:"En quelle année la Bourse de Montréal a-t-elle été créée, selon le guide ?",o:["1832","1867","1608","1701"],c:0},
+    {q:"Quelle guerre a opposé le Canada et les États-Unis de 1812 à 1814 ?",o:["La guerre de 1812","La guerre de Sécession","La guerre de Corée","La guerre des Boers"],c:0},
+    {q:"Quel chef shawnee s'est allié au major-général Isaac Brock pour défendre le Canada en 1812 ?",o:["Le chef Tecumseh","Le chef Joseph Brant","Le chef Poundmaker","Le chef Big Bear"],c:0},
+    {q:"Quelle ville le major-général Isaac Brock s'empare-t-il en juillet 1812 ?",o:["Detroit","Washington","York","Kingston"],c:0},
+    {q:"Où le major-général Isaac Brock est-il tué en repoussant avec succès une attaque américaine ?",o:["À Queenston Heights, près de Niagara Falls","À Châteauguay","À York","À Beaver Dams"],c:0},
+    {q:"Combien de soldats, menés par Charles de Salaberry, ont repoussé 4 000 envahisseurs américains à Châteauguay en 1813 ?",o:["460 soldats","4 000 soldats","40 soldats","1 400 soldats"],c:0},
+    {q:"Quels édifices les Américains ont-ils incendiés à York (Toronto) en 1813, selon le guide ?",o:["La résidence du gouverneur général et les édifices du Parlement","Le fort de Kingston","La cale sèche de Halifax","Le canal Rideau"],c:0},
+    {q:"Quel major-général canadien a mené une expédition qui a incendié la Maison-Blanche en 1814 ?",o:["Le major-général Robert Ross","Le major-général Isaac Brock","Le major-général sir Sam Steele","Le général Arthur Currie"],c:0},
+    {q:"Que devient le major-général Robert Ross peu après avoir incendié Washington D.C. en 1814 ?",o:["Il meurt au combat et est enterré à Halifax avec tous les honneurs militaires","Il devient gouverneur du Canada","Il prend sa retraite en Angleterre","Il est fait prisonnier"],c:0},
+    {q:"Quel a été le résultat de la tentative américaine de conquérir le Canada en 1814, selon le guide ?",o:["Un échec complet","Une victoire partielle américaine","Une victoire décisive américaine","Un armistice immédiat"],c:0},
+    {q:"Quels ouvrages défensifs coûteux la Grande-Bretagne met-elle en place au Canada après la guerre de 1812 ?",o:["Les citadelles de Halifax et Québec, la cale sèche de Halifax, Fort Henry à Kingston","Uniquement le canal de Suez","Uniquement des forts en Colombie-Britannique","Uniquement des tours Martello à Toronto"],c:0},
+    {q:"Qui a envoyé quelques-uns de ses meilleurs soldats défendre le Canada en 1814, ayant plus tard vaincu Napoléon en 1815 ?",o:["Le duc de Wellington","Le roi George III","Lord Durham","Le comte de Frontenac"],c:0},
+    {q:"Quel canal le duc de Wellington a-t-il décidé de terminer à Bytown (Ottawa) pour la défense du Canada ?",o:["Le canal Rideau","Le canal de Lachine","Le canal Welland","Le canal de Panama"],c:0},
+    {q:"Quelle distance Laura Secord a-t-elle parcourue en 1813 pour avertir les Britanniques d'une attaque américaine planifiée ?",o:["Environ 19 milles (30 km)","Environ 5 milles (8 km)","Environ 50 milles (80 km)","Environ 100 milles (160 km)"],c:0},
+    {q:"Quel officier britannique Laura Secord a-t-elle averti d'une attaque imminente en 1813 ?",o:["Le lieutenant James FitzGibbon","Le major-général Isaac Brock","Le colonel Charles de Salaberry","Le major-général Robert Ross"],c:0},
+    {q:"À quelle bataille la marche de Laura Secord a-t-elle contribué à la victoire britannique ?",o:["La bataille de Beaver Dams","La bataille de Châteauguay","La bataille de Queenston Heights","La bataille de York"],c:0},
+    {q:"Où les rébellions armées de 1837 et 1838 ont-elles principalement eu lieu, selon le guide ?",o:["Aux environs de Montréal et de Toronto","En Nouvelle-Écosse et au Nouveau-Brunswick","À Terre-Neuve et à l'Île-du-Prince-Édouard","Dans l'Ouest canadien"],c:0},
+    {q:"Qui a été dépêché pour faire rapport sur les rébellions de 1837-1838 et a recommandé de fusionner le Haut-Canada et le Bas-Canada ?",o:["Lord Durham","Lord Elgin","Sir John A. Macdonald","Sir George-Étienne Cartier"],c:0},
+    {q:"Que recommandait, de façon controversée, Lord Durham concernant les Canadiens français ?",o:["Qu'ils s'assimilent à la culture protestante anglophone","Qu'ils obtiennent leur propre pays","Qu'ils conservent un droit de veto constitutionnel","Qu'ils soient exemptés du gouvernement responsable"],c:0},
+    {q:"Quel acte de 1840 réunit le Haut-Canada et le Bas-Canada en une seule Province du Canada ?",o:["L'Acte d'Union","L'Acte de Québec","L'Acte constitutionnel","L'Acte de l'Amérique du Nord britannique"],c:0},
+    {q:"Quelle colonie de l'Amérique du Nord britannique obtient un gouvernement pleinement responsable en premier, en 1847-1848 ?",o:["La Nouvelle-Écosse","Le Haut-Canada","Le Bas-Canada","Terre-Neuve"],c:0},
+    {q:"Qui établit un gouvernement responsable pour le Canada-Uni en 1848-1849, avec les encouragements de Londres ?",o:["Le gouverneur lord Elgin","Le gouverneur lord Durham","Le gouverneur John Graves Simcoe","Le gouverneur général Roland Michener"],c:0},
+    {q:"Que signifie un « gouvernement responsable » au sens historique du guide ?",o:["Si le gouvernement perd un vote de confiance, il doit démissionner","Le gouvernement répond uniquement devant le roi","Le gouvernement est élu directement par le peuple entier","Le gouvernement ne rend de comptes qu'à la Cour suprême"],c:0},
+    {q:"Qui, avec Robert Baldwin, a collaboré à l'établissement d'un gouvernement responsable au Canada-Uni ?",o:["Sir Louis-Hippolyte La Fontaine","Sir John A. Macdonald","Sir George-Étienne Cartier","Sir Wilfrid Laurier"],c:0},
+    {q:"Qui a collaboré à l'établissement d'un gouvernement responsable en Nouvelle-Écosse ?",o:["Joseph Howe","Étienne-Paschal Taché","Leonard Tilley","Robert Baldwin"],c:0},
+    {q:"Quels deux ordres de gouvernement les Pères de la Confédération instaurent-ils en 1867 ?",o:["Le fédéral et le provincial","Le municipal et le territorial","Le royal et le parlementaire","Le judiciaire et l'exécutif"],c:0},
+    {q:"En quelles deux nouvelles provinces l'ancienne Province du Canada est-elle séparée lors de la Confédération ?",o:["L'Ontario et le Québec","La Nouvelle-Écosse et le Nouveau-Brunswick","Le Manitoba et l'Ontario","Le Québec et le Manitoba"],c:0},
+    {q:"Quelles quatre provinces forment le Dominion du Canada à sa création en 1867 ?",o:["L'Ontario, le Québec, la Nouvelle-Écosse et le Nouveau-Brunswick","L'Ontario, le Québec, le Manitoba et la Colombie-Britannique","Le Québec, la Nouvelle-Écosse, l'Île-du-Prince-Édouard et Terre-Neuve","L'Ontario, la Nouvelle-Écosse, l'Alberta et le Yukon"],c:0},
+    {q:"Quelle loi, adoptée par le Parlement britannique en 1867, crée officiellement le Dominion du Canada ?",o:["L'Acte de l'Amérique du Nord britannique","L'Acte de Québec","L'Acte constitutionnel","L'Acte d'Union"],c:0},
+    {q:"Comment appelait-on le 1er juillet avant 1982, selon le guide ?",o:["La Fête du Dominion","La Fête de la Confédération","Le jour de l'Empire","La Fête royale"],c:0},
+    {q:"De quel passage biblique sir Leonard Tilley s'est-il inspiré pour proposer le terme « Dominion du Canada » ?",o:["Le psaume 72","Le psaume 23","L'Évangile selon saint Jean","Le Livre de la Genèse"],c:0},
+    {q:"Que signifie le mot « dominion » utilisé dans la Constitution canadienne, selon le guide ?",o:["Puissance","Territoire","Colonie","Alliance"],c:0},
+    {q:"Quels territoires certains ont-ils envisagé d'annexer au Canada dans les années 1920, sans que cela se réalise ?",o:["Les Antilles britanniques","Le Groenland","L'Alaska","Terre-Neuve"],c:0},
+    {q:"Quel type de relations le Canada entretient-il aujourd'hui avec les pays et territoires des Antilles membres du Commonwealth, selon le guide ?",o:["D'étroites relations","Aucune relation particulière","Des relations strictement commerciales","Des relations rompues depuis 1920"],c:0},
+    {q:"Quelles industries dominaient l'économie du Canada avant la Confédération, transportées par voies navigables, selon le guide ?",o:["La fourrure, le poisson et le bois de sciage","L'automobile et l'acier","Le pétrole et le gaz","La technologie et les télécommunications"],c:0},
+    {q:"Quel type d'embarcation les négociants en fourrures, aussi appelés coureurs des bois, utilisaient-ils pour se déplacer ?",o:["Le canot","Le radeau","La goélette","Le traîneau"],c:0},
+    {q:"Quels étaient les rivaux commerciaux de la Compagnie de la Baie d'Hudson dans le Nord-Ouest, selon le guide ?",o:["Les négociants établis à Montréal","Les colons de la Nouvelle-Angleterre","Les marchands espagnols","Les autorités françaises de Louisiane"],c:0},
+    {q:"Quel type de société agricole et chasseresse formaient les Hurons-Wendats et les Iroquois, selon le guide ?",o:["Des agriculteurs et des chasseurs","Des nomades suivant les bisons","Des chasseurs-cueilleurs de l'Arctique","Des pêcheurs exclusivement"],c:0},
+    {q:"Quels peuples autochtones du Nord-Ouest étaient des chasseurs-cueilleurs, selon le guide ?",o:["Les Cris et les Dénés","Les Hurons-Wendats et les Iroquois","Les Sioux et les Inuits","Les Micmacs et les Malécites"],c:0},
+    {q:"Quel peuple autochtone nomade suivait les troupeaux de bisons, selon le guide ?",o:["Les Sioux","Les Cris","Les Inuits","Les Hurons"],c:0},
+    {q:"Que faisaient les Autochtones de la côte Ouest pour conserver le poisson, selon le guide ?",o:["Le faire sécher et le fumer","Le saler uniquement","Le congeler dans la glace","Le mettre en conserve"],c:0},
+    {q:"Pourquoi les groupes autochtones se faisaient-ils parfois la guerre entre eux, selon le guide ?",o:["Pour agrandir leur territoire, maîtriser les ressources et accroître leur prestige","Pour des raisons religieuses uniquement","À cause de la colonisation européenne uniquement","Pour des raisons linguistiques uniquement"],c:0},
+    {q:"Quel a été l'effet des maladies transmises par les Européens sur les populations autochtones après le contact ?",o:["Un grand nombre d'Autochtones sont morts, n'étant pas immunisés","Aucun effet significatif","Une immunité rapide s'est développée","Les maladies ont surtout touché les Européens"],c:0},
+    {q:"Que se sont formé les Autochtones et les Européens durant les 200 premières années de coexistence, selon le guide ?",o:["Des liens économiques, religieux et militaires solides","Uniquement des conflits armés continus","Aucun lien durable","Des traités uniquement commerciaux et temporaires"],c:0},
+    {q:"Quel roi de France régnait lorsque Jacques Cartier a revendiqué des terres pour la France ?",o:["François Ier","Louis XIV","Henri IV","Charles IX"],c:0},
+    {q:"Combien de fois Jacques Cartier a-t-il traversé l'Atlantique entre 1534 et 1542, selon le guide ?",o:["Trois fois","Une fois","Cinq fois","Dix fois"],c:0},
+    {q:"À partir de quelle décennie le nom « Canada » apparaît-il sur les cartes, selon le guide ?",o:["Les années 1550","Les années 1490","Les années 1700","Les années 1800"],c:0},
+    {q:"Quel événement de 1759 a solidifié la domination britannique sur l'Amérique du Nord après des décennies de rivalité franco-britannique ?",o:["La bataille des plaines d'Abraham","La bataille de Vimy","La guerre de 1812","La rébellion de 1837"],c:0},
+    {q:"En quelle année environ l'exploration européenne du Canada commence-t-elle véritablement, selon le guide ?",o:["1497","1608","1701","1759"],c:0},
+    {q:"Quel est le nom donné à l'ensemble des colonies britanniques d'Amérique du Nord avant la Confédération ?",o:["L'Amérique du Nord britannique","La Nouvelle-France","Le Dominion uni","La Confédération atlantique"],c:0},
+    {q:"Que représente le débat de la première assemblée élue du Bas-Canada, en 1793, selon le guide ?",o:["Un débat sur l'usage du français et de l'anglais","Un débat sur l'abolition de l'esclavage","Un débat sur l'union avec le Haut-Canada","Un débat sur l'indépendance du Canada"],c:0},
+    {q:"Quel événement de 1867 marque la naissance officielle du pays que nous connaissons aujourd'hui ?",o:["La création du Dominion du Canada par les Pères de la Confédération","La signature de l'Acte de Québec","La fin de la guerre de 1812","La fondation de la ville de Québec"],c:0}
+  ]
+},
+{
+  id:3,
+  title:"De la Confédération au Canada moderne",
+  desc:"Dominion, Ouest canadien, guerres mondiales, Révolution tranquille.",
+  questions:[
+    {q:"Qui suggère, en 1864, le terme « Dominion du Canada » ?",o:["Sir Leonard Tilley","Sir John A. Macdonald","Lord Durham","Sir George-Étienne Cartier"],c:0},
+    {q:"Qui devient le premier premier ministre du Dominion du Canada en 1867 ?",o:["Sir Wilfrid Laurier","Sir John A. Macdonald","Sir George-Étienne Cartier","Sir Étienne-Paschal Taché"],c:1},
+    {q:"Qui est considéré comme le principal architecte québécois de la Confédération ?",o:["Sir George-Étienne Cartier","Louis Riel","Sir Wilfrid Laurier","Lord Elgin"],c:0},
+    {q:"Qui mène la révolte des Métis de la rivière Rouge en 1869-1870 ?",o:["Gabriel Dumont","Louis Riel","Sir Sam Steele","Joseph Brant"],c:1},
+    {q:"En quelle année le Manitoba entre-t-il dans la Confédération ?",o:["1867","1870","1871","1905"],c:1},
+    {q:"Quelle force policière le premier ministre Macdonald crée-t-il en 1873 pour pacifier l'Ouest ?",o:["La Gendarmerie royale du Canada","La Police à cheval du Nord-Ouest","Les Rangers canadiens","La Milice sédentaire"],c:1},
+    {q:"En quelle année la Colombie-Britannique rejoint-elle le Canada ?",o:["1867","1871","1905","1949"],c:1},
+    {q:"Qui pose le dernier crampon du chemin de fer Canadien Pacifique, en 1885 ?",o:["Donald Smith (lord Strathcona)","Sir John A. Macdonald","Sir Sandford Fleming","William Van Horne"],c:0},
+    {q:"Quel premier ministre canadien-français encourage fortement l'immigration vers l'Ouest au début du XXe siècle ?",o:["Sir Wilfrid Laurier","Sir Robert Borden","Sir John A. Macdonald","Louis Saint-Laurent"],c:0},
+    {q:"En quelle année la plupart des citoyennes canadiennes de 21 ans et plus obtiennent-elles le droit de vote aux élections fédérales ?",o:["1918","1867","1929","1940"],c:0},
+    {q:"Qui devient la première députée fédérale du Canada, en 1921 ?",o:["Agnes Macphail","Thérèse Casgrain","Emily Stowe","Laura Secord"],c:0},
+    {q:"Qui a composé le poème « In Flanders Fields » (« Au champ d'honneur ») en 1915 ?",o:["Le lieutenant-colonel John McCrae","Le général sir Arthur Currie","Le capitaine Billy Bishop","Le colonel Alexander Roberts Dunn"],c:0},
+    {q:"Quel événement du 6 juin 1944 est connu sous le nom de « jour J » ?",o:["La bataille de Vimy","L'invasion alliée de la Normandie","La libération des Pays-Bas","La bataille d'Angleterre"],c:1},
+    {q:"À qui le gouvernement du Canada a-t-il présenté des excuses en 1988 pour leur déplacement forcé pendant la Seconde Guerre mondiale ?",o:["Aux Canadiens d'origine japonaise","Aux Acadiens","Aux Canadiens d'origine chinoise","Aux Métis"],c:0},
+    {q:"Comment appelle-t-on la période de changements rapides au Québec dans les années 1960 ?",o:["La Révolution tranquille","Les Années folles","La Grande Noirceur","Le Grand Dérangement"],c:0},
+    {q:"Quelle loi de 1969 garantit des services en français et en anglais par le gouvernement fédéral partout au Canada ?",o:["La Loi sur les langues officielles","La Charte de la langue française","L'Acte de Québec","La Loi canadienne sur la santé"],c:0},
+    {q:"En quelle année la Constitution canadienne est-elle modifiée pour inclure la Charte canadienne des droits et libertés ?",o:["1969","1982","1995","1867"],c:1},
+    {q:"Combien de référendums sur la souveraineté du Québec ont eu lieu, selon le guide (1980 et...) ?",o:["1990","1995","2000","1985"],c:1},
+    {q:"Quel accord de libre-échange le Canada, les États-Unis et le Mexique ont-ils conclu (élargi en 1994) ?",o:["Le GATT","L'ALENA","L'OMC","Le G8"],c:1},
+    {q:"Comment appelle-t-on la décennie de prospérité des années 1920, précédant le krach boursier de 1929 ?",o:["Les Années folles","La Belle Époque","La Révolution tranquille","L'ère Laurier"],c:0},
+    {q:"En quelle année les Territoires du Nord-Ouest rejoignent-ils la Confédération, en même temps que le Manitoba ?",o:["1870","1867","1905","1999"],c:0},
+    {q:"En quelle année l'Île-du-Prince-Édouard rejoint-elle la Confédération ?",o:["1873","1870","1867","1905"],c:0},
+    {q:"En quelle année le Canada obtient-il le transfert des îles de l'Arctique aux Territoires du Nord-Ouest ?",o:["1880","1867","1905","1999"],c:0},
+    {q:"En quelle année le territoire du Yukon est-il créé, selon le guide ?",o:["1898","1870","1905","1949"],c:0},
+    {q:"En quelle année l'Alberta et la Saskatchewan deviennent-elles des provinces ?",o:["1905","1898","1870","1949"],c:0},
+    {q:"En quelle année Terre-Neuve-et-Labrador rejoint-elle la Confédération ?",o:["1949","1905","1867","1999"],c:0},
+    {q:"En quelle année le Nunavut est-il créé, selon le guide ?",o:["1999","1949","1905","1867"],c:0},
+    {q:"Environ combien de Métis vivaient à la rivière Rouge lorsque le Canada a pris possession du Nord-Ouest en 1869 ?",o:["Environ 12 000","Environ 1 200","Environ 120 000","Environ 120"],c:0},
+    {q:"Quelle ville Louis Riel s'empare-t-il lors de la révolte de 1869-1870 ?",o:["Fort Garry","Fort Edmonton","Fort Calgary","Fort Victoria"],c:0},
+    {q:"Où Louis Riel s'enfuit-il après la reprise de Fort Garry par Ottawa en 1870 ?",o:["Aux États-Unis","En France","En Angleterre","Au Manitoba"],c:0},
+    {q:"Où a lieu la deuxième révolte des Métis, en 1885, selon le guide ?",o:["En Saskatchewan","Au Manitoba","En Alberta","En Colombie-Britannique"],c:0},
+    {q:"Pour quel motif Louis Riel est-il jugé et exécuté en 1885 ?",o:["Haute trahison","Meurtre","Vol qualifié","Rébellion mineure"],c:0},
+    {q:"De quelle province Louis Riel est-il considéré comme un défenseur des droits en plus de celui des Métis ?",o:["Le Manitoba","La Saskatchewan","L'Alberta","La Colombie-Britannique"],c:0},
+    {q:"Où la Police à cheval du Nord-Ouest établit-elle son quartier général, selon le guide ?",o:["Regina","Ottawa","Calgary","Winnipeg"],c:0},
+    {q:"Quel fort la PCNO fonde-t-elle, devenu aujourd'hui une grande ville de l'Alberta ?",o:["Fort Calgary","Fort Garry","Fort Edmonton","Fort Langley"],c:0},
+    {q:"Quel héros coloré de la police montée est cité comme exemple dans le guide ?",o:["Le major-général sir Sam Steele","Le colonel Charles de Salaberry","Le général sir Arthur Currie","Le capitaine Billy Bishop"],c:0},
+    {q:"Qui administre le Chemin de fer Canadien Pacifique et pose le dernier crampon en 1885 ?",o:["Donald Smith (lord Strathcona)","Sir Sandford Fleming","Sir Wilfrid Laurier","Sir John A. Macdonald"],c:0},
+    {q:"D'où venaient principalement les investisseurs qui ont financé la construction du CFCP, selon le guide ?",o:["Des investisseurs américains et britanniques","Des investisseurs français et allemands","Des investisseurs chinois et japonais","Des investisseurs canadiens uniquement"],c:0},
+    {q:"Qui a construit physiquement le chemin de fer transcontinental, aux côtés des travailleurs européens ?",o:["Des travailleurs chinois","Des travailleurs indiens","Des travailleurs irlandais uniquement","Des travailleurs autochtones uniquement"],c:0},
+    {q:"Quelle politique discriminatoire les travailleurs chinois ont-ils subie plus tard, selon le guide ?",o:["Une taxe d'entrée fondée sur la race","L'interdiction de voter uniquement","L'internement obligatoire","La confiscation de leurs biens"],c:0},
+    {q:"En quelle année le gouvernement du Canada a-t-il présenté ses excuses pour la taxe d'entrée imposée aux Chinois ?",o:["2006","1998","1988","1885"],c:0},
+    {q:"Combien d'Ukrainiens se sont établis dans l'Ouest canadien avant 1914, grâce au chemin de fer, selon le guide ?",o:["Environ 170 000","Environ 17 000","Environ 1 700 000","Environ 1 700"],c:0},
+    {q:"Combien de Polonais se sont établis dans l'Ouest canadien avant 1914, selon le guide ?",o:["Environ 115 000","Environ 11 500","Environ 1 150 000","Environ 1 150"],c:0},
+    {q:"Quel premier ministre canadien-français figure sur les billets de cinq dollars et a encouragé l'immigration vers l'Ouest ?",o:["Sir Wilfrid Laurier","Sir John A. Macdonald","Louis Saint-Laurent","Sir George-Étienne Cartier"],c:0},
+    {q:"Quelle bataille d'avril 1917 a coûté au Corps canadien 10 000 morts et blessés, tout en solidifiant sa réputation ?",o:["La bataille de la crête de Vimy","La bataille d'Amiens","La bataille de Passchendaele","La bataille de la Somme"],c:0},
+    {q:"Combien de Canadiens ont participé à la Première Guerre mondiale, sur une population totale de 8 millions, selon le guide ?",o:["Plus de 600 000","Plus de 60 000","Plus de 6 millions","Plus de 6 000"],c:0},
+    {q:"Combien de Canadiens sont morts pendant la Première Guerre mondiale, selon le guide ?",o:["60 000","6 000","600 000","16 000"],c:0},
+    {q:"Combien de Canadiens ont été blessés pendant la Première Guerre mondiale, selon le guide ?",o:["170 000","17 000","1 700 000","70 000"],c:0},
+    {q:"Qui commande le Corps canadien lors de la bataille d'Amiens en août 1918, considéré comme le plus grand soldat canadien ?",o:["Le général sir Arthur Currie","Le capitaine Billy Bishop","Le lieutenant-colonel John McCrae","Le major-général Isaac Brock"],c:0},
+    {q:"Comment les Allemands ont-ils surnommé la bataille d'Amiens du 8 août 1918 ?",o:["« Le jour noir de l'armée allemande »","« La bataille finale »","« La chute de l'Empire »","« Le jour de la défaite »"],c:0},
+    {q:"À quelle date l'Armistice met-il fin à la Première Guerre mondiale, en 1918 ?",o:["Le 11 novembre","Le 6 juin","Le 8 mai","Le 1er juillet"],c:0},
+    {q:"Combien d'anciens ressortissants austro-hongrois, surtout ukrainiens, ont été internés au Canada de 1914 à 1920 ?",o:["Plus de 8 000","Plus de 800","Plus de 80 000","Plus de 80"],c:0},
+    {q:"Qui a fondé le mouvement des suffragettes au Canada, première femme à pratiquer la médecine au pays ?",o:["La Dre Emily Stowe","Agnes Macphail","Thérèse Casgrain","Laura Secord"],c:0},
+    {q:"En quelle année le Manitoba devient-il la première province à accorder le droit de vote aux femmes ?",o:["1916","1918","1921","1940"],c:0},
+    {q:"En quelle année la plupart des Canadiennes obtiennent-elles le droit de vote aux élections fédérales ?",o:["1918","1916","1921","1940"],c:0},
+    {q:"Quelles Canadiennes ont obtenu le droit de vote fédéral en premier, avant les autres femmes, en 1917 ?",o:["Les infirmières au front, puis les femmes ayant un lien de parenté avec des militaires actifs","Les femmes propriétaires uniquement","Les veuves de guerre uniquement","Les enseignantes uniquement"],c:0},
+    {q:"En quelle année le Québec accorde-t-il le droit de vote aux femmes, grâce notamment à Thérèse Casgrain ?",o:["1940","1918","1921","1960"],c:0},
+    {q:"Quel surnom donnait-on aux infirmières militaires canadiennes de la Première Guerre mondiale ?",o:["Les « oiseaux bleus »","Les « anges blancs »","Les « colombes de la paix »","Les « sœurs grises »"],c:0},
+    {q:"Comment appelle-t-on les années 1920, période de prospérité économique et de faible chômage ?",o:["Les Années folles","La Belle Époque","La Grande Prospérité","L'ère dorée"],c:0},
+    {q:"Quel événement de 1929 met fin aux Années folles et entraîne la Grande Dépression ?",o:["Le krach boursier","La guerre de Corée","Le krach immobilier","La chute du dollar canadien"],c:0},
+    {q:"Quel taux de chômage la Grande Dépression atteint-elle en 1933, selon le guide ?",o:["27 %","10 %","50 %","5 %"],c:0},
+    {q:"Quelle région du Canada a été la plus durement touchée par la Grande Dépression, en raison de la sécheresse et des prix faibles des grains ?",o:["L'Ouest canadien","Les provinces de l'Atlantique","Le Québec","L'Ontario"],c:0},
+    {q:"En quelle année la Banque du Canada, banque centrale du pays, est-elle créée ?",o:["1934","1929","1918","1949"],c:0},
+    {q:"Quel groupe de réfugiés le Canada a-t-il refusé en 1939, fuyant l'Allemagne nazie ?",o:["Des réfugiés juifs","Des réfugiés ukrainiens","Des réfugiés polonais","Des réfugiés français"],c:0},
+    {q:"Combien de Canadiens et Terre-Neuviens ont participé à la Seconde Guerre mondiale, selon le guide ?",o:["Plus d'un million","Plus de cent mille","Plus de dix millions","Plus de cinq cent mille"],c:0},
+    {q:"Combien de Canadiens sont morts pendant la Seconde Guerre mondiale, selon le guide ?",o:["44 000","4 400","440 000","14 000"],c:0},
+    {q:"Où l'armée canadienne a-t-elle subi de lourdes pertes en défendant une colonie britannique d'Asie, en 1941 ?",o:["À Hong Kong","À Singapour","Aux Philippines","À Shanghai"],c:0},
+    {q:"Quel raid raté de 1942, sur la côte française, a coûté cher aux troupes canadiennes ?",o:["Le raid de Dieppe","Le débarquement de Juno","Le raid de Saint-Nazaire","La bataille de Caen"],c:0},
+    {q:"À quelle bataille aérienne l'Aviation royale du Canada a-t-elle participé, fournissant de nombreux équipages de bombardiers et chasseurs ?",o:["La bataille d'Angleterre","La bataille de Midway","La bataille de Stalingrad","La bataille de Berlin"],c:0},
+    {q:"Combien de membres d'équipage alliés ont été formés au Canada dans le cadre du Programme d'entraînement aérien du Commonwealth ?",o:["Plus de 130 000","Plus de 13 000","Plus de 1 300 000","Plus de 1 300"],c:0},
+    {q:"Quelle bataille navale la Marine royale du Canada a-t-elle menée en protégeant des convois contre les sous-marins allemands ?",o:["La bataille de l'Atlantique","La bataille du Pacifique","La bataille de la Baltique","La bataille de la Manche"],c:0},
+    {q:"Combien de soldats canadiens ont pris part à l'assaut de la plage Juno lors du jour J, le 6 juin 1944 ?",o:["15 000","1 500","150 000","150"],c:0},
+    {q:"Quels pays l'Armée canadienne aide-t-elle à libérer en 1944-1945, selon le guide ?",o:["Les Pays-Bas","L'Italie uniquement","La Belgique uniquement","La Pologne"],c:0},
+    {q:"À quelle date l'Allemagne se rend-elle, mettant fin à la guerre en Europe en 1945 ?",o:["Le 8 mai 1945","Le 11 novembre 1945","Le 6 juin 1945","Le 1er septembre 1945"],c:0},
+    {q:"Quelles îles le Japon envahit-il, en plus d'attaquer un phare sur l'île de Vancouver, pendant la guerre du Pacifique ?",o:["Les îles Aléoutiennes","Les îles Hawaï","Les îles Philippines","Les îles Kouriles"],c:0},
+    {q:"À quelle date le Japon capitule-t-il, mettant fin à la guerre dans le Pacifique en 1945 ?",o:["Le 14 août 1945","Le 8 mai 1945","Le 11 novembre 1945","Le 6 juin 1945"],c:0},
+    {q:"Pour quel motif le gouvernement fédéral a-t-il déplacé de force des Canadiens d'origine japonaise pendant la Seconde Guerre mondiale ?",o:["Par crainte, sous la pression de l'opinion publique en Colombie-Britannique","Sur ordre direct de l'armée","Sur recommandation de la GRC","Pour des raisons économiques uniquement"],c:0},
+    {q:"En quelle année le gouvernement du Canada a-t-il présenté ses excuses et indemnisé les Canadiens d'origine japonaise ?",o:["1988","1945","2006","1998"],c:0},
+    {q:"Quel traité commercial de l'après-guerre a permis d'assouplir les politiques commerciales restrictives de la Grande Dépression ?",o:["Le GATT, aujourd'hui l'OMC","L'ALENA","Le NORAD","L'OTAN"],c:0},
+    {q:"Quelle découverte de 1947, en Alberta, lance l'industrie énergétique moderne du Canada ?",o:["La découverte de gisements de pétrole","La découverte de gisements d'uranium","La découverte de gisements de gaz naturel","La découverte de gisements de charbon"],c:0},
+    {q:"En quelle année, pour la première fois, une majorité de Canadiens peuvent se nourrir, se loger et se vêtir de manière adéquate, selon le guide ?",o:["1951","1945","1934","1929"],c:0},
+    {q:"Quelle organisation militaire le Canada forme-t-il avec d'autres pays occidentaux pendant la Guerre froide ?",o:["L'OTAN","Le Commonwealth","La Francophonie","L'ONU seule"],c:0},
+    {q:"Quel commandement le Canada crée-t-il avec les États-Unis pour la défense aérospatiale de l'Amérique du Nord ?",o:["Le NORAD","L'OTAN","Le G8","L'ALENA"],c:0},
+    {q:"À quelle guerre le Canada participe-t-il de 1950 à 1953 dans le cadre d'une opération de l'ONU ?",o:["La guerre de Corée","La guerre du Golfe","La guerre du Vietnam","La guerre d'Afghanistan"],c:0},
+    {q:"Combien de Canadiens sont morts pendant la guerre de Corée, selon le guide ?",o:["Environ 500","Environ 5 000","Environ 50","Environ 50 000"],c:0},
+    {q:"Dans quels pays le Canada a-t-il participé à des missions de maintien de la paix de l'ONU, selon le guide ?",o:["L'Égypte, Chypre, Haïti, l'ex-Yougoslavie et l'Afghanistan","Uniquement l'Égypte et Chypre","Uniquement l'Afghanistan","Uniquement l'ex-Yougoslavie"],c:0},
+    {q:"Quelle commission royale d'enquête le Parlement établit-il en 1963 ?",o:["La Commission royale d'enquête sur le bilinguisme et le biculturalisme","La Commission royale sur l'immigration","La Commission royale sur la Confédération","La Commission royale sur les pensionnats"],c:0},
+    {q:"En quelle année la Loi sur les langues officielles est-elle adoptée ?",o:["1969","1963","1982","1867"],c:0},
+    {q:"À quelle association internationale de pays francophones le Canada participe-t-il dès 1970 ?",o:["La Francophonie","L'Union latine","L'ALENA","Le Commonwealth"],c:0},
+    {q:"En quelle année a lieu le premier référendum sur la souveraineté du Québec ?",o:["1980","1963","1969","1995"],c:0},
+    {q:"En quelle année la Constitution est-elle modifiée sans l'accord du Québec, incluant la Charte des droits ?",o:["1982","1980","1969","1995"],c:0},
+    {q:"En quelle année a lieu le second référendum sur la souveraineté du Québec ?",o:["1995","1980","1982","2000"],c:0},
+    {q:"En quelle année le Canada a-t-il négocié un accord de libre-échange avec les États-Unis ?",o:["1988","1994","1982","1998"],c:0},
+    {q:"En quelle année le Mexique devient-il partenaire de l'ALENA ?",o:["1994","1988","1982","1998"],c:0},
+    {q:"Combien de personnes l'ALENA englobe-t-il, selon le guide ?",o:["444 millions","44 millions","4,4 millions","4,4 milliards"],c:0},
+    {q:"À combien s'élevait le commerce de marchandises dans le cadre de l'ALENA en 2008, selon le guide ?",o:["Plus d'un billion de dollars","Plus d'un million de dollars","Plus d'un milliard de dollars","Plus de cent millions de dollars"],c:0},
+    {q:"Quel événement sportif de 1972 a marqué l'histoire culturelle canadienne, avec le « but du siècle » de Paul Henderson ?",o:["La Série du siècle Canada-URSS","Les Jeux olympiques de Montréal","La Coupe du monde de hockey","Le Championnat mondial junior"],c:0},
+    {q:"Qui a inventé le basket-ball en 1891 ?",o:["Le Canadien James Naismith","Le Canadien Wayne Gretzky","Le Canadien Terry Fox","Le Canadien Donovan Bailey"],c:0},
+    {q:"Qui établit un record mondial et obtient deux médailles d'or en course de vitesse aux Jeux olympiques de 1996 ?",o:["Donovan Bailey","Chantal Petitclerc","Catriona Le May Doan","Mark Tewksbury"],c:0},
+    {q:"Qui devient championne paralympique mondiale à la course en fauteuil roulant, selon le guide ?",o:["Chantal Petitclerc","Rick Hansen","Terry Fox","Donovan Bailey"],c:0},
+    {q:"Pour quel club Wayne Gretzky joue-t-il de 1979 à 1988 ?",o:["Les Oilers d'Edmonton","Les Canadiens de Montréal","Les Maple Leafs de Toronto","Les Flames de Calgary"],c:0},
+    {q:"Comment s'appelle la course à travers le pays entreprise par Terry Fox en 1980 pour la recherche sur le cancer ?",o:["Le marathon de l'espoir","Le tour de l'espoir","La course pour la vie","Le défi Terry Fox"],c:0},
+    {q:"Qui fait le tour du globe en fauteuil roulant en 1985 pour la recherche sur la moelle épinière ?",o:["Rick Hansen","Terry Fox","Mark Tewksbury","Donovan Bailey"],c:0},
+    {q:"Quels scientifiques canadiens sont cités comme lauréats du prix Nobel dans le guide ?",o:["Herzberg, Polanyi, Altman, Taylor, Smith et Brockhouse","Bell, Banting et Best","Fleming, Fessenden et Evans","Lazaridis, Balsillie et Naismith"],c:0},
+    {q:"Quelle invention est associée à Mike Lazaridis et Jim Balsillie, de Research In Motion ?",o:["Le BlackBerry","Le Canadarm","Le stimulateur cardiaque","L'insuline"],c:0}
+  ]
+},
+{
+  id:4,
+  title:"Le système de gouvernement",
+  desc:"État fédéral, démocratie parlementaire, monarchie constitutionnelle.",
+  questions:[
+    {q:"Quels sont les trois faits principaux caractérisant le système de gouvernement du Canada ?",o:["République, fédération, démocratie directe","État fédéral, démocratie parlementaire, monarchie constitutionnelle","Confédération, théocratie, monarchie absolue","État unitaire, république, monarchie"],c:1},
+    {q:"Quelles sont les trois parties du Parlement du Canada ?",o:["Le souverain, le Sénat et la Chambre des communes","Le premier ministre, le Cabinet et le Sénat","Le gouverneur général, les provinces et les territoires","La Chambre des communes, la Cour suprême et le Cabinet"],c:0},
+    {q:"Qui choisit les ministres du Cabinet fédéral ?",o:["Le gouverneur général","Le premier ministre","Le Sénat","La Chambre des communes"],c:1},
+    {q:"Jusqu'à quel âge les sénateurs restent-ils en poste ?",o:["65 ans","70 ans","75 ans","Il n'y a pas de limite"],c:2},
+    {q:"Qui nomme les sénateurs ?",o:["Le premier ministre directement","Le gouverneur général, sur recommandation du premier ministre","Les électeurs de chaque province","La Cour suprême"],c:1},
+    {q:"Qu'est-ce que la « sanction royale » ?",o:["L'approbation finale d'un projet de loi, accordée par le gouverneur général au nom du souverain","Le vote final des citoyens","La signature du premier ministre","L'approbation de la Cour suprême"],c:0},
+    {q:"Combien d'étapes comporte le processus menant à l'adoption d'une loi, de la première lecture à la sanction royale ?",o:["5","6","7","9"],c:2},
+    {q:"Qui représente le souverain dans chacune des dix provinces ?",o:["Le commissaire","Le lieutenant-gouverneur","Le premier ministre provincial","Le gouverneur général"],c:1},
+    {q:"Qui représente le gouvernement fédéral dans les trois territoires du Nord ?",o:["Le lieutenant-gouverneur","Le commissaire","Le maire","Le gouverneur général"],c:1},
+    {q:"Laquelle de ces responsabilités appartient exclusivement au gouvernement fédéral ?",o:["L'éducation","La défense nationale","La santé","Les autoroutes"],c:1},
+    {q:"Laquelle de ces responsabilités appartient aux provinces ?",o:["La citoyenneté","La politique étrangère","L'éducation","La défense"],c:2},
+    {q:"Quelles responsabilités sont partagées entre le gouvernement fédéral et les provinces ?",o:["L'agriculture et l'immigration","La monnaie et la navigation","Le droit criminel et la citoyenneté","La politique étrangère et la défense"],c:0},
+    {q:"Qui compose habituellement une administration municipale ?",o:["Un maire (ou préfet) et des conseillers municipaux","Un lieutenant-gouverneur et une assemblée","Un commissaire et un Cabinet","Un premier ministre et un Sénat"],c:0},
+    {q:"Que doit conserver un gouvernement pour rester au pouvoir dans une démocratie parlementaire ?",o:["La confiance de la Chambre","L'appui de la Cour suprême","Le soutien du gouverneur général seul","L'unanimité du Cabinet"],c:0},
+    {q:"Que se passe-t-il si le gouvernement perd un vote de confiance à la Chambre des communes ?",o:["Rien, il continue à gouverner","Il doit démissionner","Le Sénat prend le pouvoir","Le gouverneur général devient premier ministre"],c:1},
+    {q:"Qu'est-ce qu'un « gouvernement majoritaire » ?",o:["Un parti qui détient au moins la moitié des sièges à la Chambre des communes","Un parti qui a remporté le vote populaire national","Un gouvernement formé de plusieurs partis","Un gouvernement sans opposition"],c:0},
+    {q:"Comment appelle-t-on le parti d'opposition ayant le plus grand nombre de députés ?",o:["Le parti au pouvoir","L'opposition officielle (La loyale Opposition de Sa Majesté)","Le parti indépendant","Le gouvernement fantôme"],c:1},
+    {q:"Qui a des chefs de bande et des conseillers responsables notamment du logement et des écoles dans les réserves ?",o:["Les municipalités","Les Premières Nations","Les provinces","Le Sénat"],c:1},
+    {q:"Combien de juges siègent à la Cour suprême du Canada ?",o:["Sept","Neuf","Onze","Treize"],c:1},
+    {q:"Qui nomme les juges de la Cour suprême du Canada ?",o:["Le premier ministre seul","Le gouverneur général","Les provinces","Le Parlement par vote"],c:1},
+    {q:"Depuis quelle année la reine Elizabeth II est-elle devenue reine du Canada, selon le guide ?",o:["1952","1867","1982","2002"],c:0},
+    {q:"Quel jubilé la reine Elizabeth II a-t-elle célébré en 2002, selon le guide ?",o:["Son jubilé d'or (50 ans de règne)","Son jubilé de diamant (60 ans de règne)","Son jubilé de platine (70 ans de règne)","Son jubilé d'argent (25 ans de règne)"],c:0},
+    {q:"Quel jubilé la reine Elizabeth II devait-elle célébrer en 2012, selon le guide ?",o:["Son jubilé de diamant (60 ans de règne)","Son jubilé d'or (50 ans de règne)","Son jubilé d'argent (25 ans de règne)","Son jubilé de platine (70 ans de règne)"],c:0},
+    {q:"Depuis combien d'années la Couronne est-elle un symbole de l'État au Canada, selon le guide ?",o:["Environ 400 ans","Environ 100 ans","Environ 800 ans","Environ 50 ans"],c:0},
+    {q:"Depuis quand le Canada est-il une monarchie constitutionnelle à part entière, selon le guide ?",o:["Depuis la Confédération, en 1867","Depuis 1982","Depuis 1952","Depuis 1931"],c:0},
+    {q:"Sous le règne de quelle reine la Confédération a-t-elle eu lieu en 1867 ?",o:["La reine Victoria","La reine Elizabeth II","La reine Elizabeth Ire","La reine Anne"],c:0},
+    {q:"Quelle est la distinction entre le chef d'État et le chef du gouvernement au Canada, selon le guide ?",o:["Le souverain est le chef d'État, le premier ministre dirige réellement le pays","Le premier ministre est le chef d'État, le souverain dirige le pays","Ils exercent exactement la même fonction","Le gouverneur général est chef du gouvernement"],c:0},
+    {q:"Qui représente le souverain au niveau fédéral, selon le guide ?",o:["Le gouverneur général","Le lieutenant-gouverneur","Le commissaire","Le premier ministre"],c:0},
+    {q:"Pour combien d'années le gouverneur général est-il habituellement nommé, selon le guide ?",o:["Environ cinq ans","Environ dix ans","Environ deux ans","À vie"],c:0},
+    {q:"Qui recommande la nomination du gouverneur général au souverain ?",o:["Le premier ministre","Le Sénat","La Cour suprême","Le Cabinet en entier"],c:0},
+    {q:"Pour combien d'années le lieutenant-gouverneur est-il habituellement nommé, selon le guide ?",o:["Environ cinq ans","Environ dix ans","À vie","Environ deux ans"],c:0},
+    {q:"Quel document de 1867 définit les responsabilités du gouvernement fédéral et des gouvernements provinciaux ?",o:["L'Acte de l'Amérique du Nord britannique (Loi constitutionnelle de 1867)","La Charte canadienne des droits et libertés","La Loi sur les langues officielles","L'Acte de Québec"],c:0},
+    {q:"Quel est l'autre nom donné aujourd'hui à l'Acte de l'Amérique du Nord britannique ?",o:["La Loi constitutionnelle de 1867","La Loi sur la citoyenneté","La Charte de 1982","Le Règlement sur la citoyenneté"],c:0},
+    {q:"Quelles trois interactions entre pouvoirs le guide identifie-t-il comme protégeant les droits des Canadiens ?",o:["L'exécutif, le législatif et le judiciaire","Le fédéral, le provincial et le municipal","Le Sénat, la Chambre et le Cabinet","La Couronne, le peuple et l'armée"],c:0},
+    {q:"Qui adopte les lois provinciales et territoriales au sein de chaque gouvernement provincial ou territorial ?",o:["L'assemblée législative élue","Le gouverneur général","Le Sénat fédéral","La Cour suprême"],c:0},
+    {q:"Comment appelle-t-on les membres de l'Assemblée nationale du Québec ?",o:["Des députés (membres de l'Assemblée nationale)","Des sénateurs","Des conseillers municipaux","Des commissaires"],c:0},
+    {q:"Quel rôle joue le commissaire dans les trois territoires du Nord, selon le guide ?",o:["Il représente le gouvernement fédéral et joue un rôle cérémonial","Il est le chef élu du gouvernement territorial","Il siège à la Cour suprême","Il représente uniquement les Nations Unies"],c:0},
+    {q:"Qui adopte les « règlements » touchant uniquement la communauté locale ?",o:["Le conseil municipal","L'assemblée législative provinciale","Le Parlement fédéral","Le Sénat"],c:0},
+    {q:"Qui compose habituellement un conseil municipal, en plus du maire ou préfet ?",o:["Des conseillers municipaux ou échevins","Des sénateurs","Des députés fédéraux","Des juges de paix"],c:0},
+    {q:"De quoi les municipalités sont-elles normalement responsables, selon le tableau du guide ?",o:["Planification urbaine, rues et routes, assainissement, déneigement, services d'urgence","La politique étrangère et la défense nationale","L'éducation postsecondaire et la santé provinciale","Le droit criminel et la citoyenneté"],c:0},
+    {q:"Quels services sociaux et de santé locaux relèvent typiquement de l'administration municipale, selon le tableau du guide ?",o:["Les services communautaires","Les hôpitaux universitaires","Les tribunaux provinciaux","Les forces armées"],c:0},
+    {q:"Qui a de grandes responsabilités dans les réserves des Premières Nations, notamment le logement et les écoles ?",o:["Les chefs de bande et les conseillers","Les municipalités avoisinantes","Le gouverneur général","Le Sénat"],c:0},
+    {q:"Que représentent les organismes autochtones provinciaux, régionaux et nationaux, selon le guide ?",o:["Les Premières Nations, les Métis et les Inuits dans leurs relations avec les gouvernements","Uniquement les Premières Nations","Uniquement les Inuits","Uniquement les Métis de l'Ouest"],c:0},
+    {q:"Quel principe canadien veut que si le gouvernement perd la confiance de la Chambre, il doive démissionner ?",o:["La responsabilité ministérielle (gouvernement responsable)","La souveraineté parlementaire absolue","Le fédéralisme asymétrique","La primauté judiciaire"],c:0},
+    {q:"Qui doit conserver la « confiance de la Chambre » pour rester en poste, selon le guide ?",o:["Les ministres du Cabinet","Les juges de la Cour suprême","Les sénateurs","Les lieutenants-gouverneurs"],c:0},
+    {q:"Quelle institution examine et révise les projets de loi avant leur adoption, en plus de la Chambre des communes ?",o:["Le Sénat","La Cour suprême","Le Cabinet","Le gouverneur général seul"],c:0},
+    {q:"Qu'est-ce qu'un projet de loi, selon le guide ?",o:["Une proposition de nouvelle loi","Une décision judiciaire finale","Un décret royal","Un règlement municipal"],c:0},
+    {q:"Quelle est la première étape du processus menant à l'adoption d'une loi ?",o:["La première lecture","La sanction royale","L'étude en comité","La troisième lecture"],c:0},
+    {q:"Que se passe-t-il lors de la deuxième lecture d'un projet de loi ?",o:["Les députés débattent du principe du projet de loi","Le projet de loi est imprimé pour la première fois","Le Sénat approuve définitivement le texte","Le gouverneur général signe le projet de loi"],c:0},
+    {q:"Que se passe-t-il à l'étape de l'étude en comité ?",o:["Les membres du comité examinent le projet de loi article par article","Les députés votent la sanction royale","Le Sénat rejette automatiquement le texte","Le premier ministre signe le projet de loi"],c:0},
+    {q:"Que peuvent faire les députés à l'étape du rapport ?",o:["Ajouter d'autres amendements","Dissoudre le Parlement","Nommer de nouveaux sénateurs","Convoquer une élection"],c:0},
+    {q:"Que se passe-t-il lors de la troisième lecture d'un projet de loi ?",o:["Les députés débattent du projet de loi et votent","Le projet de loi est présenté pour la première fois","Le comité l'examine article par article","Le Sénat le reçoit pour la première fois"],c:0},
+    {q:"Quelle étape suit un processus similaire à celui de la Chambre des communes pour un projet de loi ?",o:["L'étape du Sénat","La sanction royale","La première lecture","L'étape du rapport"],c:0},
+    {q:"Quelle est la dernière étape avant qu'un projet de loi devienne loi au Canada ?",o:["La sanction royale","La troisième lecture","L'étude en comité","La première lecture"],c:0},
+    {q:"Qui est responsable de l'agriculture au Canada, selon le partage des compétences ?",o:["Le gouvernement fédéral et les provinces (responsabilité partagée)","Uniquement le gouvernement fédéral","Uniquement les provinces","Uniquement les municipalités"],c:0},
+    {q:"Qui est responsable de l'immigration au Canada, selon le partage des compétences ?",o:["Le gouvernement fédéral et les provinces (responsabilité partagée)","Uniquement le gouvernement fédéral","Uniquement les provinces","Uniquement les territoires"],c:0},
+    {q:"Qui est responsable de la défense nationale, de la politique étrangère et du droit criminel, selon le guide ?",o:["Le gouvernement fédéral","Les provinces","Les municipalités","Les territoires seulement"],c:0},
+    {q:"Qui est responsable de l'éducation, de la santé et des ressources naturelles, selon le guide ?",o:["Les provinces","Le gouvernement fédéral","Les municipalités","Le Sénat"],c:0},
+    {q:"Qui est responsable des autoroutes et de la propriété et des droits civils, selon le guide ?",o:["Les provinces","Le gouvernement fédéral","Les Premières Nations exclusivement","Le Sénat"],c:0},
+    {q:"Quel avantage le fédéralisme offre-t-il aux provinces, selon le guide ?",o:["Adopter des politiques adaptées à leurs populations et mettre à l'essai de nouvelles idées","Éliminer toute concurrence entre provinces","Uniformiser toutes les lois provinciales","Supprimer les assemblées législatives provinciales"],c:0},
+    {q:"Quelle institution fédérale, traditionnellement renouvelée tous les quatre ans, est composée de députés élus par la population ?",o:["La Chambre des communes","Le Sénat","La Cour suprême","Le Cabinet"],c:0},
+    {q:"Quel est le nom donné aux membres de la Chambre des communes ?",o:["Des députés ou membres du Parlement","Des sénateurs","Des conseillers municipaux","Des commissaires"],c:0},
+    {q:"Qui choisit les ministres de la Couronne, la plupart choisis parmi les députés de la Chambre des communes ?",o:["Le premier ministre","Le gouverneur général seul","Le Sénat","La Cour suprême"],c:0},
+    {q:"Quel rôle jouent le premier ministre et les ministres du Cabinet ensemble, selon le guide ?",o:["Ils prennent les décisions importantes sur la façon de diriger le pays","Ils nomment uniquement les juges","Ils remplacent le Sénat","Ils dissolvent les provinces"],c:0},
+    {q:"Qui prépare le budget et propose la plupart des nouvelles lois au gouvernement fédéral ?",o:["Le premier ministre et le Cabinet","Le Sénat seul","La Cour suprême","Le gouverneur général seul"],c:0},
+    {q:"Quel est le rôle des partis d'opposition à la Chambre des communes, selon le guide ?",o:["S'opposer pacifiquement aux propositions du gouvernement et essayer de les améliorer","Voter automatiquement toutes les lois du gouvernement","Remplacer le Sénat","Nommer les juges de la Cour suprême"],c:0},
+    {q:"Quels étaient, selon le guide, les trois grands partis politiques représentés à la Chambre des communes ?",o:["Le Parti conservateur, le Nouveau Parti démocratique et le Parti libéral","Le Parti réformiste, le Bloc et les Verts","Le Parti conservateur, le Parti libéral et le Parti vert","Le NPD, le Bloc québécois et le Parti libéral"],c:0},
+    {q:"Quelle cour s'occupe des affaires civiles concernant de petites sommes d'argent ?",o:["Les tribunaux des petites créances","La Cour suprême","La Cour fédérale","Le Sénat"],c:0},
+    {q:"Quel type de tribunal provincial traite des infractions routières ?",o:["Les cours des infractions routières","La Cour suprême du Canada","La Cour fédérale","Le tribunal militaire"],c:0},
+    {q:"Quel type de tribunal provincial s'occupe des questions familiales ?",o:["Les tribunaux de la famille","La Cour fédérale","La Cour suprême","Les tribunaux militaires"],c:0},
+    {q:"Comment appelle-t-on parfois la cour d'appel et la cour de première instance dans certaines provinces ?",o:["La Cour du Banc de la Reine ou Cour suprême (provinciale)","La Cour fédérale exclusivement","Le Sénat provincial","L'Assemblée législative"],c:0},
+    {q:"Quelle formule résume le mieux la garantie offerte par le système de gouvernement fédéral quant aux politiques provinciales ?",o:["Il permet l'adaptation aux réalités locales","Il impose l'uniformité totale des lois","Il abolit les assemblées provinciales","Il centralise tout pouvoir à Ottawa"],c:0},
+    {q:"Quel document énonce, en 1867, les responsabilités respectives du gouvernement fédéral et des provinces ?",o:["L'Acte de l'Amérique du Nord britannique","La Charte canadienne des droits et libertés","La Loi sur les langues officielles","Le Règlement sur la citoyenneté"],c:0},
+    {q:"Quels trois faits, selon le guide, résument le mieux le système canadien de gouvernement ?",o:["État fédéral, démocratie parlementaire, monarchie constitutionnelle","République fédérale, démocratie directe, théocratie","État unitaire, monarchie absolue, démocratie représentative","Confédération, république, monarchie parlementaire"],c:0},
+    {q:"Quel rôle joue le Sénat dans le processus législatif, en plus de réviser les projets de loi ?",o:["Il les examine avant qu'ils reçoivent la sanction royale","Il les rejette systématiquement","Il remplace la Chambre des communes","Il nomme le premier ministre"],c:0},
+    {q:"Qui doit approuver et surveiller les dépenses du gouvernement, selon le rôle des représentants élus ?",o:["Les députés","Les juges","Les lieutenants-gouverneurs","Les maires"],c:0},
+    {q:"Quelle est la portée du droit de vote des citoyens dans la démocratie parlementaire canadienne, selon le guide ?",o:["Élire les députés fédéraux ainsi que les représentants provinciaux et territoriaux","Élire uniquement le premier ministre","Élire uniquement les sénateurs","Élire uniquement le gouverneur général"],c:0},
+    {q:"Quel principe canadien veut que le gouvernement fédéral et les provinces se partagent certaines compétences plutôt que de les exercer seuls ?",o:["Le fédéralisme partagé (agriculture, immigration)","La souveraineté parlementaire exclusive","Le fédéralisme asymétrique total","La centralisation complète"],c:0},
+    {q:"Que signifie concrètement le fait que les trois territoires du Nord n'ont pas le statut de province ?",o:["Ils ont de petites populations mais des gouvernements exerçant des fonctions similaires","Ils n'ont aucun gouvernement local","Ils sont administrés uniquement par des municipalités","Ils dépendent entièrement des provinces voisines"],c:0},
+    {q:"Qui exécute, dans les territoires, des fonctions semblables à celles des provinces malgré l'absence de statut provincial ?",o:["Les gouvernements et assemblées territoriales","Le Sénat fédéral","La Cour suprême","Les municipalités uniquement"],c:0},
+    {q:"Quelle institution fédérale approuve les nominations à la magistrature de la Cour suprême, sur recommandation du premier ministre ?",o:["Le gouverneur général","Le Sénat","La Chambre des communes","Les provinces"],c:0},
+    {q:"Quels sont, selon le guide, les trois pouvoirs (branches) du gouvernement qui collaborent parfois dans un climat de tension créatrice ?",o:["L'exécutif, le législatif et le judiciaire","Le fédéral, le provincial et le municipal","Le Sénat, la Chambre et le Cabinet","La Couronne, le peuple et l'armée"],c:0}
+  ]
+},
+{
+  id:5,
+  title:"Élections fédérales et système de justice",
+  desc:"Voter, circonscriptions, tribunaux, primauté du droit.",
+  questions:[
+    {q:"Quand doivent avoir lieu les élections fédérales, selon la loi (sauf déclenchement anticipé) ?",o:["Le premier lundi de septembre tous les quatre ans","Le troisième lundi d'octobre tous les quatre ans","Le 1er juillet tous les cinq ans","Le dernier lundi de novembre tous les trois ans"],c:1},
+    {q:"Comment appelle-t-on les zones électorales représentées chacune par un député ?",o:["Des municipalités","Des circonscriptions","Des provinces","Des districts sénatoriaux"],c:1},
+    {q:"Selon le guide, combien de circonscriptions comptait le Canada ?",o:["208","308","408","508"],c:1},
+    {q:"Quel âge minimum faut-il avoir pour voter à une élection fédérale ?",o:["16 ans","18 ans","21 ans","25 ans"],c:1},
+    {q:"Quel organisme neutre du Parlement produit les listes électorales ?",o:["La Cour suprême","Élections Canada","Le Sénat","Statistique Canada"],c:1},
+    {q:"Qu'indique la carte d'information de l'électeur envoyée par Élections Canada ?",o:["Le montant des impôts à payer","Quand et où voter","Le programme du parti au pouvoir","La liste des candidats uniquement"],c:1},
+    {q:"Peut-on faire ajouter son nom à la liste électorale même le jour de l'élection ?",o:["Non, jamais","Oui, en tout temps, même le jour du vote","Seulement 30 jours avant","Seulement par la poste"],c:1},
+    {q:"Le vote est-il secret au Canada ?",o:["Non, les résultats individuels sont publics","Oui, personne ne peut vous obliger à révéler votre vote","Seulement pour les élections provinciales","Non, sauf pour les référendums"],c:1},
+    {q:"Comment remplit-on le bulletin de vote ?",o:["En signant à côté du nom du candidat","En inscrivant un « X » dans le cercle à côté du nom du candidat choisi","En cochant plusieurs candidats","En numérotant les candidats par préférence"],c:1},
+    {q:"Qui compte les votes après la fermeture des bureaux de scrutin ?",o:["Le personnel de scrutin","Les candidats eux-mêmes","La Cour suprême","Le gouverneur général"],c:0},
+    {q:"Sur quelle présomption se fonde le système judiciaire canadien dans les affaires criminelles ?",o:["La présomption de culpabilité","La présomption d'innocence","La présomption de bonne foi de l'État","Aucune présomption"],c:1},
+    {q:"Qu'est-ce que « l'application régulière de la loi » ?",o:["Le principe voulant que le gouvernement respecte toutes les garanties juridiques d'une personne","Le droit de vote à 18 ans","L'obligation de payer ses impôts à temps","La règle du silence en cour"],c:0},
+    {q:"Quel est le plus haut tribunal du pays ?",o:["La Cour fédérale du Canada","La Cour suprême du Canada","La Cour du Banc de la Reine","La Cour d'appel provinciale"],c:1},
+    {q:"Quelle cour s'occupe des questions concernant le gouvernement fédéral ?",o:["La Cour fédérale du Canada","Les tribunaux des petites créances","Les tribunaux de la famille","Les cours des infractions routières"],c:0},
+    {q:"Quelle force policière applique les lois fédérales dans l'ensemble du Canada ?",o:["La police municipale","La Gendarmerie royale du Canada (GRC)","Les Rangers canadiens","La Garde côtière"],c:1},
+    {q:"Dans quelles provinces la GRC n'agit-elle PAS comme police provinciale ?",o:["L'Ontario et le Québec","La Colombie-Britannique et l'Alberta","Le Manitoba et la Saskatchewan","Toutes les provinces de l'Atlantique"],c:0},
+    {q:"Que peut-on obtenir si on n'a pas les moyens de payer un avocat ?",o:["Un pardon automatique","L'aide juridique gratuite ou à faible coût","Une exemption de procès","Un avocat commis d'office uniquement au criminel"],c:1},
+    {q:"Qui règle les conflits selon les lois, tandis que la police les fait respecter ?",o:["Les tribunaux","Le Sénat","Les municipalités","Le gouverneur général"],c:0},
+    {q:"La loi s'applique-t-elle également aux juges, aux politiciens et à la police au Canada ?",o:["Non, ils ont des exemptions","Oui, la loi s'applique à tous","Seulement aux politiciens","Seulement à la police"],c:1},
+    {q:"Quel est l'objectif des lois canadiennes, selon le guide ?",o:["Maintenir l'ordre, régler les conflits pacifiquement et exprimer les valeurs des Canadiens","Uniquement punir les crimes","Uniquement protéger la propriété privée","Uniquement réguler le commerce"],c:0},
+    {q:"Qui peut demander au gouverneur général de déclencher une élection avant la date fixe prévue par la loi ?",o:["Le premier ministre","N'importe quel député","Le chef de l'opposition","La Cour suprême"],c:0},
+    {q:"Quel âge minimum faut-il avoir pour se présenter comme candidat à une élection fédérale ?",o:["18 ans","21 ans","25 ans","16 ans"],c:0},
+    {q:"Comment appelle-t-on les personnes qui se présentent à une élection ?",o:["Des candidats","Des électeurs","Des scrutateurs","Des délégués"],c:0},
+    {q:"Peut-il y avoir plusieurs candidats dans une même circonscription, selon le guide ?",o:["Oui","Non, un seul par parti national","Non, un seul au total","Seulement deux maximum"],c:0},
+    {q:"Qui devient le député d'une circonscription après l'élection ?",o:["Le candidat qui obtient le plus grand nombre de votes","Le candidat le plus âgé","Le candidat désigné par le premier ministre","Le candidat du parti au pouvoir uniquement"],c:0},
+    {q:"Que représente un député une fois élu, selon le guide ?",o:["Ses électeurs ainsi que tous les Canadiens","Uniquement son parti politique","Uniquement les électeurs ayant voté pour lui","Uniquement le gouvernement fédéral"],c:0},
+    {q:"Quelles sont les trois conditions à remplir pour voter à une élection fédérale ?",o:["Être citoyen canadien, avoir au moins 18 ans, être inscrit sur la liste électorale","Être né au Canada, avoir 21 ans, payer ses impôts","Être résident permanent, avoir 18 ans, parler français","Être propriétaire, avoir 18 ans, être citoyen"],c:0},
+    {q:"À partir de quelle base de données Élections Canada produit-il les listes électorales ?",o:["Le Registre national des électeurs","Le recensement décennal","Le registre des passeports","Le registre foncier provincial"],c:0},
+    {q:"Que reçoit chaque personne inscrite au Registre national des électeurs quand une élection est déclenchée ?",o:["Une carte d'information de l'électeur","Un bulletin de vote par la poste automatiquement","Une convocation devant un juge","Un questionnaire de sondage"],c:0},
+    {q:"Que faire si l'on ne reçoit pas de carte d'information de l'électeur, selon le guide ?",o:["Téléphoner à son bureau d'élection local ou à Élections Canada","Ne rien faire, on ne peut pas voter","Attendre la prochaine élection","Contacter uniquement son député"],c:0},
+    {q:"Quel numéro de téléphone d'Élections Canada est mentionné dans le guide ?",o:["1-800-463-6868","1-800-622-6232","1-888-242-2100","1-800-465-7735"],c:0},
+    {q:"Quelles options existent pour voter si on ne peut pas se présenter le jour de l'élection ?",o:["Le vote par anticipation ou le bulletin de vote spécial","Le vote par téléphone uniquement","Le vote par un représentant désigné","Aucune option, il faut voter le jour même"],c:0},
+    {q:"Que faut-il apporter au bureau de vote le jour de l'élection, selon le guide ?",o:["La carte d'information de l'électeur ainsi qu'une preuve d'identité et d'adresse","Uniquement son passeport","Uniquement sa carte de citoyenneté","Uniquement un témoin"],c:0},
+    {q:"Où remplit-on son bulletin de vote pour garantir le secret du vote ?",o:["Derrière l'isoloir","À l'entrée du bureau de vote","Devant le personnel de scrutin","À l'extérieur du bureau de vote"],c:0},
+    {q:"Que fait le personnel de scrutin avec le bulletin de vote une fois rempli ?",o:["Il détache le numéro du bulletin et le remet pour être déposé dans l'urne","Il le photocopie","Il le fait signer par un témoin","Il le transmet directement à Ottawa"],c:0},
+    {q:"Où peut-on consulter les résultats d'une élection fédérale, selon le guide ?",o:["À la télévision ou sur le site Web d'Élections Canada","Uniquement dans les journaux imprimés","Uniquement au bureau du premier ministre","Uniquement à la Chambre des communes"],c:0},
+    {q:"Qui est invité par le gouverneur général à former le gouvernement après une élection ?",o:["Le chef du parti ayant le plus grand nombre de sièges","Le chef de l'opposition officielle systématiquement","Le sénateur le plus ancien","Le maire de la capitale"],c:0},
+    {q:"Que devient le chef du parti au pouvoir après avoir été nommé par le gouverneur général ?",o:["Le premier ministre","Le lieutenant-gouverneur","Le commissaire","Le gouverneur général adjoint"],c:0},
+    {q:"Que signifie l'expression « gouvernement minoritaire » ?",o:["Le parti au pouvoir détient moins de la moitié des sièges à la Chambre","Le parti au pouvoir n'a obtenu aucun siège","Le gouvernement est dirigé par l'opposition","Le Sénat contrôle entièrement le gouvernement"],c:0},
+    {q:"Aussi longtemps que le premier ministre et son parti conservent quoi, forment-ils le gouvernement ?",o:["L'appui ou la confiance de la majorité des députés","L'appui unanime du Sénat","L'appui de la Cour suprême","L'appui du gouverneur général uniquement"],c:0},
+    {q:"Quand la Chambre des communes considère-t-elle qu'il s'agit d'une « question de confiance » ?",o:["Lors d'un vote important comme le budget","Lors de chaque vote sans exception","Uniquement lors de l'élection du président de la Chambre","Uniquement lors d'un vote sur la citoyenneté"],c:0},
+    {q:"Que peut faire le premier ministre si la majorité des députés vote contre une décision importante du gouvernement ?",o:["Demander au gouverneur général de déclencher une élection","Ignorer le vote et continuer à gouverner","Dissoudre la Cour suprême","Nommer de nouveaux sénateurs pour renverser le vote"],c:0},
+    {q:"Un des privilèges de la citoyenneté canadienne concernant les élections est :",o:["Le droit de vote","L'exemption de voter","Le droit de se faire élire sans condition d'âge","Le droit de voter deux fois"],c:0},
+    {q:"Que ne peut-on pas exiger de quelqu'un concernant son vote, selon le principe du vote secret ?",o:["Qu'il révèle pour qui il a voté","Qu'il montre sa carte d'identité","Qu'il attende son tour","Qu'il signe le registre électoral"],c:0},
+    {q:"Qui peut discuter librement de son propre vote, selon le guide sur le vote secret ?",o:["L'électeur lui-même, s'il le choisit","Uniquement les scrutateurs","Uniquement les candidats","Personne, c'est toujours interdit"],c:0},
+    {q:"Que garantit la présomption d'innocence dans le système de justice canadien ?",o:["Chacun est innocent jusqu'à preuve du contraire","Chacun est coupable jusqu'à preuve du contraire","Seuls les citoyens bénéficient de la présomption d'innocence","La présomption d'innocence ne s'applique qu'aux mineurs"],c:0},
+    {q:"Sur quel héritage se fonde le système juridique du Canada, selon le guide ?",o:["La primauté du droit, la liberté prévue par la loi, les principes démocratiques et l'application régulière de la loi","Uniquement la common law britannique","Uniquement le code civil français","Uniquement le droit international"],c:0},
+    {q:"Qui rédige les lois qui guident les individus dans la société canadienne, selon le guide ?",o:["Les représentants élus","Les juges de la Cour suprême uniquement","La police","Le gouverneur général seul"],c:0},
+    {q:"Quels sont les trois objectifs des lois canadiennes selon le guide ?",o:["Maintenir l'ordre, régler pacifiquement les conflits, exprimer les valeurs et croyances des Canadiens","Uniquement punir les crimes graves","Uniquement protéger le commerce international","Uniquement réglementer l'immigration"],c:0},
+    {q:"Que symbolisent les yeux bandés de la statue de la Justice au palais de justice de Vancouver, selon le guide ?",o:["L'impartialité de la loi, aveugle à tout sauf aux faits","La faiblesse du système judiciaire","L'absence de transparence des tribunaux","La sévérité excessive des juges"],c:0},
+    {q:"Quel rôle joue un garde-frontière à la frontière canado-américaine, selon une illustration du guide ?",o:["Inspecter les véhicules, parfois avec un chien renifleur","Percevoir les impôts fédéraux","Organiser les élections locales","Délivrer les certificats de citoyenneté"],c:0},
+    {q:"Dans quelles circonstances peut-on demander l'aide de la police, selon le guide ?",o:["Accident, vol, agression, témoin d'un crime, personne disparue","Uniquement en cas de vol qualifié","Uniquement pour des questions fiscales","Uniquement lors des élections"],c:0},
+    {q:"Que peut-on faire si on estime que la conduite d'un agent de police pose problème, selon le guide ?",o:["Poser des questions ou faire part de ses préoccupations via un processus dédié","Rien, aucun recours n'existe","S'adresser uniquement à la Cour suprême","Porter plainte uniquement auprès du premier ministre"],c:0},
+    {q:"Quelle cour s'occupe des questions concernant le gouvernement fédéral, distincte de la Cour suprême ?",o:["La Cour fédérale du Canada","Le tribunal des petites créances","Le tribunal de la famille","La cour des infractions routières"],c:0},
+    {q:"Combien de niveaux de tribunaux existe-t-il généralement dans une province, selon le guide (cour d'appel et cour de première instance) ?",o:["Deux","Un seul","Trois","Quatre"],c:0},
+    {q:"Quels types d'affaires les tribunaux provinciaux de moindre importance traitent-ils, selon le guide ?",o:["Infractions routières, affaires familiales, petites créances","Uniquement les crimes graves","Uniquement les affaires constitutionnelles","Uniquement les conflits internationaux"],c:0},
+    {q:"Où se trouve l'école de la Gendarmerie royale du Canada, selon le guide ?",o:["À Regina, en Saskatchewan","À Ottawa, en Ontario","À Calgary, en Alberta","À Winnipeg, au Manitoba"],c:0},
+    {q:"La GRC applique les lois fédérales dans l'ensemble du Canada et sert de police provinciale sauf dans quelles provinces ?",o:["L'Ontario et le Québec","La Colombie-Britannique et le Yukon","Le Manitoba et la Saskatchewan","Toutes les provinces de l'Atlantique"],c:0},
+    {q:"Quels services de police existent dans la plupart des grands centres urbains, en plus de la GRC ?",o:["Des services de police municipaux","Uniquement l'armée","Uniquement la Garde côtière","Uniquement des agences privées"],c:0},
+    {q:"Que peut-on obtenir si on n'a pas les moyens de payer les services d'un avocat, selon le guide ?",o:["L'aide juridique, gratuite ou à faible coût","Une exemption totale de procès","Un jugement automatiquement favorable","Une réduction d'impôt"],c:0},
+    {q:"Qui peut aider à résoudre des problèmes juridiques et représenter une personne en cour ?",o:["Des avocats","Uniquement des juges","Uniquement des policiers","Uniquement des députés"],c:0},
+    {q:"Quel principe empêche un gouvernement de détenir arbitrairement une personne, selon la tradition britannique ?",o:["L'habeas corpus","La sanction royale","Le fédéralisme","La souveraineté parlementaire"],c:0},
+    {q:"Quelle affirmation résume le mieux le principe de la primauté du droit dans le système de justice ?",o:["Personne, y compris le gouvernement, n'est au-dessus de la loi","Seuls les citoyens sont soumis à la loi","Le gouvernement peut ignorer la loi en cas d'urgence","La loi ne s'applique pas aux entreprises"],c:0},
+    {q:"Quels sont, selon le guide, les rôles respectifs des tribunaux et de la police ?",o:["Les tribunaux règlent les conflits, la police fait respecter les lois","Les tribunaux font respecter les lois, la police les rédige","La police juge les criminels, les tribunaux les arrêtent","Les tribunaux et la police ont exactement le même rôle"],c:0},
+    {q:"Quelle est la portée de la loi canadienne concernant les juges, les politiciens et la police, selon le guide ?",o:["Elle s'applique à eux comme à tout le monde","Elle ne s'applique pas aux juges","Elle ne s'applique pas aux politiciens en exercice","Elle ne s'applique qu'aux citoyens ordinaires"],c:0},
+    {q:"Quelle est l'obligation d'un citoyen convoqué comme juré, selon le système de justice ?",o:["Il doit s'y conformer, la loi l'y oblige","Il peut refuser sans justification","Seuls les avocats peuvent être jurés","Seules les personnes de plus de 55 ans peuvent être jurés"],c:0},
+    {q:"Que garantit « l'application régulière de la loi » à toute personne au Canada ?",o:["Le respect de toutes les garanties juridiques prévues par la loi","Un procès gratuit dans tous les cas","Une exemption d'impôt pendant le procès","Un avocat désigné à vie"],c:0},
+    {q:"D'où vient historiquement le principe de la présomption d'innocence dans le système canadien ?",o:["De l'héritage juridique britannique et démocratique","Du droit romain uniquement","Du droit autochtone uniquement","D'une loi adoptée en 1982 uniquement"],c:0},
+    {q:"Quelles sont les trois options pour voter mentionnées dans le guide, en plus du vote le jour de l'élection ?",o:["Le vote par anticipation et le bulletin de vote spécial","Le vote par correspondance et le vote électronique","Le vote par procuration et le vote téléphonique","Le vote mobile et le vote en ligne"],c:0},
+    {q:"Que se passe-t-il concrètement lors de l'étape « L'urne » du processus de vote décrit dans le guide ?",o:["Le bulletin rempli est déposé dans l'urne après que son numéro a été détaché","Le bulletin est envoyé par la poste à Ottawa","Le bulletin est scanné électroniquement","Le bulletin est signé par un témoin"],c:0},
+    {q:"Que confirme la carte d'information de l'électeur, selon le guide ?",o:["Que le nom de l'électeur est sur la liste électorale, et quand/où voter","Le montant des impôts municipaux","La liste des candidats disponibles uniquement","Le résultat prévu de l'élection"],c:0},
+    {q:"Quelle est la première étape du processus de vote décrite dans le guide ?",o:["Recevoir la carte d'information de l'électeur","Se rendre au bureau de vote directement","Voter par bulletin spécial obligatoirement","Contacter son député"],c:0},
+    {q:"Qui produit les listes électorales fédérales à partir du Registre national des électeurs, selon le guide ?",o:["Élections Canada, un organisme neutre du Parlement","Le gouvernement provincial","La Gendarmerie royale du Canada","Statistique Canada"],c:0},
+    {q:"Quelle est la clientèle visée par le Registre national des électeurs, selon le guide ?",o:["Les citoyens canadiens de 18 ans ou plus ayant le droit de voter","Tous les résidents du Canada sans exception","Uniquement les citoyens nés au Canada","Uniquement les citoyens de plus de 55 ans"],c:0},
+    {q:"Quelle est la conséquence, pour un électeur, de ne pas figurer sur le Registre national des électeurs ?",o:["Il peut tout de même s'inscrire en tout temps, même le jour du vote","Il perd définitivement son droit de vote","Il doit attendre la prochaine élection","Il doit payer une amende"],c:0},
+    {q:"Que représente le « personnel de scrutin » le jour d'une élection, selon le guide ?",o:["Les personnes chargées de gérer le vote au bureau de scrutin","Les candidats eux-mêmes","Les juges de la Cour suprême","Les députés sortants"],c:0},
+    {q:"Quelles informations la carte d'information de l'électeur fournit-elle en cas de besoin d'interprète, selon le guide ?",o:["Un numéro de téléphone à composer","Le nom d'un interprète assigné","L'adresse d'une agence de traduction","Rien, il faut se débrouiller seul"],c:0},
+    {q:"Quel est le rôle du gouverneur général après une élection concernant la formation du gouvernement ?",o:["Inviter le chef du parti ayant le plus de sièges à former le gouvernement","Choisir personnellement tous les ministres","Nommer directement le premier ministre sans élection","Dissoudre automatiquement la Chambre"],c:0},
+    {q:"Quelle est la signification concrète d'un vote de censure à la Chambre des communes ?",o:["Un vote qui peut faire tomber le gouvernement s'il est perdu","Un vote purement symbolique sans conséquence","Un vote réservé uniquement au Sénat","Un vote qui ne concerne que le budget municipal"],c:0},
+    {q:"Que doit faire un gouvernement qui perd un vote de confiance, selon la démocratie parlementaire canadienne ?",o:["Démissionner","Continuer à gouverner normalement","Dissoudre la Cour suprême","Convoquer un référendum"],c:0},
+    {q:"Quels sont les deux critères essentiels que doivent remplir les électeurs, en plus d'être citoyens canadiens, selon le guide ?",o:["Avoir 18 ans et être inscrits sur la liste électorale","Payer leurs impôts et posséder une propriété","Parler les deux langues officielles et voter localement","Résider au Canada depuis dix ans et avoir un emploi"],c:0},
+    {q:"Quelle est la portée territoriale des responsabilités de la police municipale, selon le guide ?",o:["La communauté locale","L'ensemble du pays","Uniquement les autoroutes fédérales","Uniquement les frontières internationales"],c:0},
+    {q:"Quelles affaires les tribunaux provinciaux moins importants traitent-ils, en plus des infractions routières et de la famille ?",o:["Les petites créances","Les crimes de haute trahison","Les conflits constitutionnels","Les traités internationaux"],c:0},
+    {q:"Quel est le principe qui sous-tend que même le gouvernement doit respecter les lois qu'il adopte ?",o:["La primauté du droit","La souveraineté parlementaire absolue","Le privilège exécutif","L'immunité gouvernementale"],c:0},
+    {q:"Que doit garantir le système de justice canadien à chacun, selon la phrase d'introduction du guide sur ce sujet ?",o:["L'application régulière de la loi","Un acquittement automatique","Une exemption fiscale","Un procès uniquement en français"],c:0}
+  ]
+},
+{
+  id:6,
+  title:"Symboles, économie et régions",
+  desc:"Drapeau, hymnes, économie canadienne, provinces et territoires.",
+  questions:[
+    {q:"En quelle année le drapeau canadien actuel (la feuille d'érable rouge) a-t-il été hissé pour la première fois ?",o:["1921","1965","1982","1867"],c:1},
+    {q:"Quelles sont les couleurs nationales du Canada depuis 1921 ?",o:["Le bleu et le blanc","Le rouge et le blanc","Le vert et l'or","Le rouge et le noir"],c:1},
+    {q:"Quel symbole est gravé sur les pierres tombales des soldats canadiens morts au combat ?",o:["La feuille d'érable","Le castor","La fleur de lys","La Couronne"],c:0},
+    {q:"Quelle est la devise nationale du Canada ?",o:["A mari usque ad mare","Je me souviens","Dieu et mon droit","Ad astra per aspera"],c:0},
+    {q:"Quel animal a été choisi comme symbole par la Compagnie de la Baie d'Hudson et figure sur certaines armoiries ?",o:["Le caribou","Le castor","L'ours polaire","L'orignal"],c:1},
+    {q:"En quelle année le « Ô Canada » a-t-il été proclamé hymne national ?",o:["1867","1921","1980","1867"],c:2},
+    {q:"Quel est le titre de l'hymne royal du Canada ?",o:["Dieu protège la Reine (ou le Roi)","Ô Canada","La Marseillaise canadienne","God Save Canada"],c:0},
+    {q:"Quelle distinction honorifique canadienne a été créée en 1967, année du centenaire de la Confédération ?",o:["La Croix de Victoria","L'Ordre du Canada","La Médaille du jubilé","Le Prix du Gouverneur général"],c:1},
+    {q:"Quelle est la plus haute distinction que peuvent recevoir les Canadiens pour un acte de bravoure face à l'ennemi ?",o:["L'Ordre du Canada","La Croix de Victoria","La Médaille du jour du Souvenir","Le Mérite militaire"],c:1},
+    {q:"Quelle fête est célébrée le 1er juillet ?",o:["Le jour du Souvenir","La Fête du Canada","La Fête de Victoria","La Fête du Travail"],c:1},
+    {q:"À quelle date célèbre-t-on le jour du Souvenir ?",o:["Le 1er juillet","Le 24 juin","Le 11 novembre","Le 25 décembre"],c:2},
+    {q:"Avec quels pays le Canada a-t-il conclu l'ALENA, un accord de libre-échange ?",o:["Les États-Unis et le Mexique","Les États-Unis et le Royaume-Uni","La France et l'Allemagne","Le Japon et la Chine"],c:0},
+    {q:"À quel groupe de pays industrialisés le Canada appartient-il, selon le guide ?",o:["Le G7","Le G8","Le G20 seulement","L'Union européenne"],c:1},
+    {q:"Quels sont les trois grands secteurs industriels de l'économie canadienne ?",o:["Services, manufacturier, ressources naturelles","Agriculture, finance, tourisme","Industrie lourde, pêche, textile","Technologie, santé, éducation"],c:0},
+    {q:"Quel pourcentage des travailleurs canadiens occupe un emploi dans le secteur des services ?",o:["Plus de 50 %","Plus de 75 %","Moins de 30 %","Environ 90 %"],c:1},
+    {q:"Quelles sont les cinq régions du Canada présentées dans le guide ?",o:["Atlantique, centre du Canada, Prairies, côte Ouest, territoires du Nord","Est, Ouest, Nord, Sud, Centre","Québec, Ontario, Prairies, Colombie-Britannique, Arctique","Maritimes, Laurentides, Prairies, Rocheuses, Yukon"],c:0},
+    {q:"Quelle ville a été choisie comme capitale du Canada en 1857 par la reine Victoria ?",o:["Toronto","Montréal","Ottawa","Kingston"],c:2},
+    {q:"Quelle est la capitale de la province de Québec ?",o:["Montréal","Québec","Gatineau","Sherbrooke"],c:1},
+    {q:"Quelle province compte plus de 12 millions d'habitants, soit plus d'un tiers de la population canadienne ?",o:["Le Québec","L'Ontario","L'Alberta","La Colombie-Britannique"],c:1},
+    {q:"Quel territoire a été créé en 1999 à partir de l'est des Territoires du Nord-Ouest ?",o:["Le Yukon","Le Nunavut","Le Labrador","Le Nunavik"],c:1},
+    {q:"Depuis quand la feuille d'érable est-elle utilisée comme symbole par les Canadiens français, selon le guide ?",o:["Depuis le XVIIIe siècle","Depuis le XXe siècle","Depuis 1867","Depuis 1965"],c:0},
+    {q:"Depuis quand la feuille d'érable figure-t-elle sur les uniformes et insignes militaires canadiens ?",o:["Depuis les années 1850","Depuis 1965","Depuis 1921","Depuis 1867"],c:0},
+    {q:"Quel motif inspire le drapeau canadien de 1965, avec son rouge-blanc-rouge ?",o:["Le drapeau du Collège militaire royal de Kingston, fondé en 1876","Le drapeau de la Nouvelle-France","Le drapeau du Québec","L'Union Jack modifié"],c:0},
+    {q:"Quel est le nom du drapeau royal officiel du Canada, distinct du drapeau à la feuille d'érable ?",o:["L'Union Jack","Le Red Ensign","Le drapeau fleurdelisé","Le drapeau du Dominion"],c:0},
+    {q:"Comment appelle-t-on le drapeau canadien qui a précédé celui de 1965, utilisé pendant environ 100 ans ?",o:["Le Red Ensign canadien","Le drapeau fleurdelisé","L'Union Jack","Le drapeau du Dominion"],c:0},
+    {q:"Depuis quelle année les anciens combattants portent-ils officiellement le Red Ensign canadien, selon le guide ?",o:["2005","1965","1921","1982"],c:0},
+    {q:"Quand la fleur de lys aurait-elle été adoptée comme symbole par le roi de France, selon la légende rapportée dans le guide ?",o:["En 496","En 1215","En 1608","En 1759"],c:0},
+    {q:"En quelle année le Québec adopte-t-il son propre drapeau, conçu à partir de la croix et de la fleur de lys ?",o:["1948","1965","1867","1982"],c:0},
+    {q:"Quels symboles nationaux figurent sur les armoiries du Canada, en plus des feuilles d'érable rouges ?",o:["Les symboles de l'Angleterre, de la France, de l'Écosse et de l'Irlande","Uniquement les symboles britanniques","Uniquement les symboles français","Les symboles des dix provinces"],c:0},
+    {q:"Où les armoiries du Canada sont-elles aujourd'hui reproduites, selon le guide ?",o:["Sur les billets de banque, documents gouvernementaux et édifices publics","Uniquement sur les timbres","Uniquement sur les passeports","Uniquement sur les drapeaux provinciaux"],c:0},
+    {q:"Quel style architectural caractérise les édifices du Parlement, populaire sous le règne de la reine Victoria ?",o:["Le style néogothique","Le style Second Empire français","Le style Art déco","Le style baroque"],c:0},
+    {q:"Dans quelle décennie les édifices du Parlement ont-ils été achevés, selon le guide ?",o:["Les années 1860","Les années 1920","Les années 1900","Les années 1950"],c:0},
+    {q:"Quel incendie de 1916 a détruit l'édifice du Centre du Parlement, reconstruit en 1922 ?",o:["Un incendie accidentel","Un attentat étranger","Un incendie criminel avéré","Un bombardement"],c:0},
+    {q:"Quelle partie de l'édifice du Centre du Parlement a été épargnée par l'incendie de 1916 ?",o:["La Bibliothèque du Parlement","La Tour de la Paix","La Chambre des communes","Le Sénat"],c:0},
+    {q:"En quelle année la Tour de la Paix a-t-elle été terminée, en souvenir de la Première Guerre mondiale ?",o:["1927","1916","1922","1982"],c:0},
+    {q:"Que contiennent les Livres du Souvenir, dans la Chapelle du Souvenir de la Tour de la Paix ?",o:["Les noms des soldats, marins et aviateurs morts au service du Canada","La liste des premiers ministres","La liste des Pères de la Confédération","Les traités signés par le Canada"],c:0},
+    {q:"Dans quel style architectural l'Assemblée nationale du Québec est-elle construite, selon le guide ?",o:["Le style du Second Empire français","Le style néogothique","Le style baroque romain","Le style colonial britannique"],c:0},
+    {q:"Quel sport est considéré comme le sport d'hiver national du Canada, selon le guide ?",o:["Le hockey sur glace","Le curling","Le ski alpin","Le patinage de vitesse"],c:0},
+    {q:"Quel sport, joué à l'origine par les Autochtones, est le sport officiel de l'été au Canada ?",o:["La crosse","Le baseball","Le soccer","Le rugby"],c:0},
+    {q:"Quel sport compte plus de joueurs inscrits que toute autre activité sportive au Canada, selon le guide ?",o:["Le soccer","Le hockey sur glace","Le football canadien","Le curling"],c:0},
+    {q:"Quelle coupe la Ligue nationale de hockey se dispute-t-elle, donnée en 1892 par lord Stanley ?",o:["La Coupe Stanley","La Coupe Grey","La Coupe Clarkson","La Coupe du Gouverneur"],c:0},
+    {q:"Quel trophée est décerné aux équipes de hockey féminin, créé en 2005 par Adrienne Clarkson ?",o:["La Coupe Clarkson","La Coupe Stanley","La Coupe Grey","La Coupe du Souvenir"],c:0},
+    {q:"Quel trophée les équipes professionnelles de la Ligue canadienne de football se disputent-elles, offert en 1909 par lord Grey ?",o:["La Coupe Grey","La Coupe Stanley","La Coupe Clarkson","La Coupe du Dominion"],c:0},
+    {q:"Quel animal est devenu, en 1834, l'emblème de la Société Saint-Jean-Baptiste, selon le guide ?",o:["Le castor","Le caribou","L'orignal","L'aigle"],c:0},
+    {q:"Sur les armoiries de quelles provinces retrouve-t-on l'image du castor, selon le guide ?",o:["La Saskatchewan et l'Alberta","L'Ontario et le Québec","La Colombie-Britannique et le Yukon","Le Manitoba et le Nunavut"],c:0},
+    {q:"En quelle année le « Ô Canada » a-t-il été chanté pour la première fois dans la ville de Québec ?",o:["1880","1921","1965","1982"],c:0},
+    {q:"Quel autre nom donne-t-on à l'hymne « Dieu protège la Reine (ou le Roi) », selon le guide ?",o:["L'hymne royal","L'hymne national","L'hymne militaire","L'hymne du Dominion"],c:0},
+    {q:"En quelle année l'Ordre du Canada a-t-il été créé, marquant le centenaire de la Confédération ?",o:["1967","1980","1982","1921"],c:0},
+    {q:"Quels types de récompenses officielles existe-t-il, en plus des ordres, selon le guide ?",o:["Des décorations et des médailles","Uniquement des titres de noblesse","Uniquement des bourses d'études","Uniquement des pensions"],c:0},
+    {q:"Quel type de titres et décorations le Canada a-t-il utilisés avant de créer son propre système en 1967 ?",o:["Les titres et décorations britanniques","Les titres et décorations français","Les titres et décorations américains","Aucun système n'existait avant"],c:0},
+    {q:"Quelle est la plus haute distinction que peuvent recevoir les Canadiens pour bravoure ou dévouement ultime face à l'ennemi ?",o:["La Croix de Victoria","L'Ordre du Canada","La Médaille du jubilé","Le Mérite militaire"],c:0},
+    {q:"Combien de Canadiens ont reçu la Croix de Victoria depuis 1854, selon le guide ?",o:["96","9","960","9600"],c:0},
+    {q:"Qui est le premier Canadien à avoir reçu la Croix de Victoria, lors de la charge de la brigade légère à Balaclava en 1854 ?",o:["Alexander Roberts Dunn","William Hall","Filip Konowal","Billy Bishop"],c:0},
+    {q:"Qui est le premier Noir à avoir mérité la Croix de Victoria, pour son rôle dans le siège de Lucknow en 1857 ?",o:["Le matelot William Hall","Le capitaine Billy Bishop","Le caporal Filip Konowal","Le brigadier Paul Triquet"],c:0},
+    {q:"Qui est le premier membre du Corps canadien né hors de l'Empire britannique à recevoir la Croix de Victoria, à la bataille de la cote 70 en 1917 ?",o:["Le caporal Filip Konowal","Alexander Roberts Dunn","Billy Bishop","Robert Hampton Gray"],c:0},
+    {q:"Quel as de l'aviation, né à Owen Sound, a reçu la Croix de Victoria pendant la Première Guerre mondiale ?",o:["Le capitaine Billy Bishop","Le lieutenant Robert Hampton Gray","Le brigadier Paul Triquet","Le matelot William Hall"],c:0},
+    {q:"Quel lieutenant, pilote dans la marine, a reçu la Croix de Victoria à titre posthume en 1945, dernier Canadien à ce jour à la recevoir ?",o:["Le lieutenant Robert Hampton Gray","Le capitaine Billy Bishop","Alexander Roberts Dunn","Le caporal Filip Konowal"],c:0},
+    {q:"Quelle fête nationale du Québec est célébrée le 24 juin, selon le guide ?",o:["La fête de la Saint-Jean-Baptiste","La Fête du Canada","Le jour du Souvenir","La Fête de Victoria"],c:0},
+    {q:"Quel jour férié commémore la naissance de sir John A. Macdonald, selon le guide ?",o:["La Journée sir John A. Macdonald, le 11 janvier","Le jour de Vimy, le 9 avril","La Fête de Victoria","La Journée sir Wilfrid Laurier"],c:0},
+    {q:"Quelle fête commémore l'anniversaire de la souveraine, le lundi précédant le 25 mai, selon le guide ?",o:["La Fête de Victoria","La Fête du Canada","Le jour de Vimy","La fête du Travail"],c:0},
+    {q:"Quelle date est associée au jour de Vimy, selon le guide ?",o:["Le 9 avril","Le 11 novembre","Le 1er juillet","Le 24 juin"],c:0},
+    {q:"Quelle date est associée à la Journée sir Wilfrid Laurier, selon le guide ?",o:["Le 20 novembre","Le 11 janvier","Le 9 avril","Le 26 décembre"],c:0},
+    {q:"Quels secteurs composent le secteur de l'exploitation des ressources naturelles, selon le guide ?",o:["Foresterie, pêche, agriculture, exploitation minière et énergie","Uniquement l'agriculture","Uniquement la pêche et la foresterie","Uniquement le pétrole"],c:0},
+    {q:"Quel produit le secteur manufacturier canadien exporte-t-il, en plus du papier et des aliments, selon le guide ?",o:["La technologie aérospatiale et les automobiles","Uniquement des vêtements","Uniquement des produits agricoles","Uniquement des minéraux bruts"],c:0},
+    {q:"Quel est le plus important partenaire commercial international du Canada, selon le guide ?",o:["Les États-Unis","Le Royaume-Uni","La Chine","Le Mexique"],c:0},
+    {q:"Quelle proportion des exportations canadiennes est destinée aux États-Unis, selon le guide ?",o:["Plus des trois quarts","Environ la moitié","Moins d'un quart","Environ 10 %"],c:0},
+    {q:"Comment appelle-t-on couramment la frontière canado-américaine, en raison de l'absence de défenses militaires ?",o:["La plus longue frontière non défendue du monde","La frontière la plus surveillée du monde","La frontière la plus courte du monde","La frontière la plus ancienne du monde"],c:0},
+    {q:"Où se trouve l'Arche de la paix, symbole des liens étroits entre le Canada et les États-Unis, selon le guide ?",o:["À Blaine, dans l'État de Washington","À Niagara Falls, en Ontario","À Windsor, en Ontario","À Detroit, aux États-Unis"],c:0},
+    {q:"Quelles phrases sont inscrites sur l'Arche de la paix, selon le guide ?",o:["« children of a common mother » et « brethren dwelling together in unity »","« E pluribus unum »","« In God we trust »","« Liberté, égalité, fraternité »"],c:0},
+    {q:"Quelle proportion de la population canadienne vit dans l'Ontario et le Québec réunis, selon la description du centre du Canada ?",o:["Plus de la moitié","Moins d'un quart","Environ un tiers","Environ 90 %"],c:0},
+    {q:"Quel est le plus grand lac d'eau douce au monde, parmi les Grands Lacs situés entre l'Ontario et les États-Unis ?",o:["Le lac Supérieur","Le lac Ontario","Le lac Érié","Le lac Huron"],c:0},
+    {q:"Quelle province est surnommée « le grenier du monde » et « la province du blé », selon le guide ?",o:["La Saskatchewan","Le Manitoba","L'Alberta","L'Ontario"],c:0},
+    {q:"Quel pourcentage des terres arables du Canada la Saskatchewan possède-t-elle, selon le guide ?",o:["40 %","10 %","75 %","25 %"],c:0},
+    {q:"Quelles ressources minérales abondantes la Saskatchewan renferme-t-elle, en plus du pétrole et du gaz naturel ?",o:["L'uranium et la potasse","L'or et l'argent","Le diamant et le charbon","Le cuivre et le zinc"],c:0},
+    {q:"En l'honneur de qui la province de l'Alberta a-t-elle été nommée, selon le guide ?",o:["La princesse Louise Caroline Alberta, fille de la reine Victoria","Le roi George III","Le premier ministre John A. Macdonald","Le gouverneur général lord Grey"],c:0},
+    {q:"En quelle année le parc national Banff, en Alberta, a-t-il été fondé, selon le guide ?",o:["1885","1867","1905","1930"],c:0},
+    {q:"Quelle ressource énergétique considérable se trouve dans le nord de l'Alberta, en plus du pétrole conventionnel ?",o:["Les sables bitumineux","Le charbon uniquement","L'uranium uniquement","Le gaz de schiste uniquement"],c:0},
+    {q:"Quelle communauté franco-manitobaine, avec environ 45 000 habitants, est la plus grande de l'Ouest canadien ?",o:["Saint-Boniface, à Winnipeg","Gravelbourg, en Saskatchewan","Falher, en Alberta","Maillardville, en Colombie-Britannique"],c:0},
+    {q:"Quel pourcentage de la population manitobaine est d'origine ukrainienne, selon le guide ?",o:["14 %","2 %","50 %","30 %"],c:0},
+    {q:"Quelle province possède la plus grande proportion d'Autochtones parmi toutes les provinces, selon le guide ?",o:["Le Manitoba, avec plus de 15 %","L'Ontario","Le Québec","La Colombie-Britannique"],c:0},
+    {q:"Quel port du Pacifique, le plus grand et le plus fréquenté du Canada, ouvre la voie vers l'Asie-Pacifique ?",o:["Le port de Vancouver","Le port de Victoria","Le port de Prince Rupert","Le port de Halifax"],c:0},
+    {q:"Quelle proportion des biens produits en Colombie-Britannique provient de la foresterie, selon le guide ?",o:["Environ la moitié","Environ un dixième","Presque la totalité","Moins de 5 %"],c:0},
+    {q:"Combien de parcs provinciaux la Colombie-Britannique possède-t-elle, formant le plus vaste réseau de parcs au Canada ?",o:["Environ 600","Environ 60","Environ 6 000","Environ 6"],c:0},
+    {q:"Quelles langues, après l'anglais, sont les plus parlées dans les villes de la Colombie-Britannique, selon le guide ?",o:["Le chinois et le punjabi","Le français et l'espagnol","Le tagalog et le vietnamien","L'allemand et l'italien"],c:0},
+    {q:"Quelle proportion de la population du Nunavut est inuite, selon le guide ?",o:["Environ 85 %","Environ 30 %","Environ 50 %","Environ 10 %"],c:0},
+    {q:"Quelle est la langue officielle et la principale langue d'enseignement au Nunavut, selon le guide ?",o:["L'inuktitut","Le français","L'anglais uniquement","Le michif"],c:0},
+    {q:"Comment le Nunavut choisit-il son premier ministre et ses ministres, selon le guide ?",o:["Par consensus, parmi les 19 membres de l'Assemblée législative","Par élection partisane classique","Par nomination fédérale directe","Par tirage au sort"],c:0},
+    {q:"Quel corps de réserve joue un rôle clé pour la sécurité et la souveraineté dans le Grand Nord canadien, selon le guide ?",o:["Les Rangers canadiens","La Gendarmerie royale du Canada","L'Aviation royale du Canada","La Marine royale du Canada"],c:0},
+    {q:"Quelle température record, la plus froide jamais enregistrée au Canada, a été observée au Yukon, selon le guide ?",o:["-63 °C","-40 °C","-80 °C","-25 °C"],c:0},
+    {q:"Quel poète a célébré la ruée vers l'or du Yukon des années 1890, selon le guide ?",o:["Robert W. Service","John McCrae","Pauline Johnson","Stephen Leacock"],c:0},
+    {q:"Quel chemin de fer historique reliait Skagway, en Alaska, à Whitehorse, capitale du Yukon ?",o:["Le chemin de fer White Pass and Yukon","Le Chemin de fer Canadien Pacifique","Le chemin de fer Intercolonial","Le chemin de fer Grand Tronc"],c:0},
+    {q:"Quel est le surnom donné à Yellowknife, capitale des Territoires du Nord-Ouest, en raison de son industrie ?",o:["La capitale nord-américaine du diamant","La capitale de l'or","La capitale du pétrole arctique","La capitale de l'uranium"],c:0},
+    {q:"Quel fleuve, le plus long des Territoires du Nord-Ouest, n'est surpassé en Amérique du Nord que par le Mississippi ?",o:["Le fleuve Mackenzie","Le fleuve Saint-Laurent","La rivière Yukon","La rivière des Outaouais"],c:0},
+    {q:"Quelle est la plus haute montagne du Canada, située au Yukon, selon le guide ?",o:["Le mont Logan","Le mont Robson","Le mont Assiniboine","Le mont Columbia"],c:0},
+    {q:"En l'honneur de qui le mont Logan est-il nommé, un géologue né à Montréal ?",o:["Sir William Logan","Sir Sandford Fleming","Sir John A. Macdonald","Sir Wilfrid Laurier"],c:0},
+    {q:"Quel pont relie le Nouveau-Brunswick à l'Île-du-Prince-Édouard, l'un des plus longs ponts à travées multiples du monde ?",o:["Le pont de la Confédération","Le pont Champlain","Le pont Jacques-Cartier","Le pont Ambassador"],c:0},
+    {q:"Quelle romancière a situé son roman « Anne... la maison aux pignons verts » à l'Île-du-Prince-Édouard ?",o:["Lucy Maud Montgomery","Margaret Laurence","Pauline Johnson","Alice Munro"],c:0},
+    {q:"Quelle baie, entre le Nouveau-Brunswick et la Nouvelle-Écosse, connaît les marées les plus hautes du monde ?",o:["La baie de Fundy","La baie de Hudson","La baie des Chaleurs","La baie Georgienne"],c:0},
+    {q:"Quelle est, selon le guide, la plus ancienne colonie de l'Empire britannique, reconnue pour ses lieux de pêche ?",o:["Terre-Neuve","La Nouvelle-Écosse","L'Île-du-Prince-Édouard","Le Nouveau-Brunswick"],c:0},
+    {q:"Quelle province possède son propre fuseau horaire, distinct du reste du Canada ?",o:["Terre-Neuve-et-Labrador","La Colombie-Britannique","Le Nunavut","Le Yukon"],c:0},
+    {q:"Quelle est la seule province officiellement bilingue du Canada, selon le guide ?",o:["Le Nouveau-Brunswick","Le Québec","L'Ontario","Le Manitoba"],c:0},
+    {q:"Quel réseau hydrographique, deuxième en importance sur le littoral atlantique nord-américain, traverse le Nouveau-Brunswick ?",o:["La rivière Saint-Jean","Le fleuve Mackenzie","La rivière Saguenay","Le fleuve Saint-Laurent"],c:0},
+    {q:"Quelle ville est le noyau francophone et acadien du Nouveau-Brunswick, selon le guide ?",o:["Moncton","Fredericton","Saint John","Bathurst"],c:0},
+    {q:"Combien d'habitants compte le Québec, selon le guide, dont la vaste majorité vit sur les rives du Saint-Laurent ?",o:["Près de huit millions","Près de douze millions","Près de deux millions","Près de vingt millions"],c:0},
+    {q:"Quelle industrie fait du Québec le principal producteur mondial d'hydroélectricité, grâce à ses immenses réserves d'eau douce ?",o:["L'hydroélectricité","Le pétrole","Le gaz naturel","Le charbon"],c:0}
+  ]
+}
+];
+
+const PASS_THRESHOLD = 15;
+const TOTAL_QUESTIONS = 20;
+const TIME_LIMIT = 30 * 60;
+const STORAGE_KEY = "citoyennete-quiz-progress-v1";
+
+let progress = loadProgress();
+let currentLevelIndex = null;
+let currentQuestions = [];
+let currentIndex = 0;
+let answers = [];
+let timeLeft = TIME_LIMIT;
+let timerHandle = null;
+
+function loadProgress(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(raw) return JSON.parse(raw);
+  }catch(e){}
+  const init = {};
+  LEVELS.forEach(l => init[l.id] = {bestScore:0, attempts:0});
+  return init;
+}
+function saveProgress(){
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(progress)); }catch(e){}
+}
+function isUnlocked(idx){
+  if(idx === 0) return true;
+  const prevLevel = LEVELS[idx-1];
+  return (progress[prevLevel.id]?.bestScore || 0) >= PASS_THRESHOLD;
+}
+function shuffled(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+
+function renderHome(){
+  clearInterval(timerHandle);
+  const app = document.getElementById('app');
+  let html = '<div class="levels">';
+  LEVELS.forEach((lvl, idx) => {
+    const unlocked = isUnlocked(idx);
+    const p = progress[lvl.id] || {bestScore:0, attempts:0};
+    let badge;
+    if(!unlocked){
+      badge = '<span class="badge locked">🔒 Verrouillé</span>';
+    } else if(p.attempts === 0){
+      badge = '<span class="badge new">Non tenté</span>';
+    } else if(p.bestScore >= PASS_THRESHOLD){
+      badge = `<span class="badge pass">Réussi — ${p.bestScore}/20</span>`;
+    } else {
+      badge = `<span class="badge fail">Meilleur score ${p.bestScore}/20</span>`;
+    }
+    html += `
+      <div class="level-card ${unlocked ? 'unlocked' : 'locked'}">
+        <div class="lvl-num">${String(idx+1).padStart(2,'0')}</div>
+        <h3>${lvl.title}</h3>
+        <div class="desc">${lvl.desc}</div>
+        <div class="pool-size">${lvl.questions.length} questions dans la banque</div>
+        <div class="status-row">
+          ${badge}
+          <button class="btn" ${unlocked ? '' : 'disabled'} onclick="startLevel(${idx})">${unlocked ? (p.attempts ? 'Refaire' : 'Commencer') : 'Verrouillé'}</button>
+        </div>
+      </div>`;
+  });
+  html += '</div>';
+  app.innerHTML = html;
+}
+
+function startLevel(idx){
+  currentLevelIndex = idx;
+  currentQuestions = shuffled(LEVELS[idx].questions).slice(0, TOTAL_QUESTIONS);
+  currentIndex = 0;
+  answers = new Array(currentQuestions.length).fill(null);
+  timeLeft = TIME_LIMIT;
+  renderQuestion();
+  clearInterval(timerHandle);
+  timerHandle = setInterval(tick, 1000);
+}
+
+function tick(){
+  timeLeft--;
+  updateTimerDisplay();
+  if(timeLeft <= 0){
+    clearInterval(timerHandle);
+    finishQuiz(true);
+  }
+}
+function fmtTime(s){
+  const m = Math.floor(s/60).toString().padStart(2,'0');
+  const sec = (s%60).toString().padStart(2,'0');
+  return `${m}:${sec}`;
+}
+function updateTimerDisplay(){
+  const el = document.getElementById('timerBox');
+  if(!el) return;
+  el.textContent = '⏱ ' + fmtTime(Math.max(timeLeft,0));
+  el.classList.toggle('warn', timeLeft <= 60);
+}
+
+function renderQuestion(){
+  const app = document.getElementById('app');
+  const q = currentQuestions[currentIndex];
+  const selected = answers[currentIndex];
+  const pct = Math.round((currentIndex)/currentQuestions.length*100);
+
+  let optionsHtml = '';
+  q.o.forEach((opt, i) => {
+    const letter = String.fromCharCode(65+i);
+    let cls = 'option';
+    let disabledAttr = '';
+    if(selected !== null){
+      disabledAttr = 'disabled';
+      if(i === q.c) cls += ' correct';
+      else if(i === selected) cls += ' incorrect';
+    } else if(selected === i){
+      cls += ' selected';
+    }
+    optionsHtml += `<button class="${cls}" ${disabledAttr} onclick="selectAnswer(${i})">
+        <span class="letter">${letter}</span><span>${opt}</span>
+      </button>`;
+  });
+
+  const isLast = currentIndex === currentQuestions.length - 1;
+
+  app.innerHTML = `
+    <div class="quiz-header">
+      <div class="q-count">Question ${currentIndex+1} / ${currentQuestions.length} — Niveau ${currentLevelIndex+1} : ${LEVELS[currentLevelIndex].title}</div>
+      <div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div>
+      <div class="timer" id="timerBox">⏱ ${fmtTime(timeLeft)}</div>
+    </div>
+    <div class="question-card">
+      <h2>${q.q}</h2>
+      <div class="options">${optionsHtml}</div>
+      <div class="quiz-footer">
+        <button class="btn" id="nextBtn" ${selected===null ? 'disabled' : ''} onclick="nextQuestion()">${isLast ? 'Voir les résultats' : 'Question suivante'}</button>
+      </div>
+    </div>
+  `;
+}
+
+function selectAnswer(i){
+  if(answers[currentIndex] !== null) return;
+  answers[currentIndex] = i;
+  renderQuestion();
+}
+
+function nextQuestion(){
+  if(answers[currentIndex] === null) return;
+  if(currentIndex < currentQuestions.length - 1){
+    currentIndex++;
+    renderQuestion();
+  } else {
+    clearInterval(timerHandle);
+    finishQuiz(false);
+  }
+}
+
+function finishQuiz(timeUp){
+  let score = 0;
+  currentQuestions.forEach((q,i) => { if(answers[i] === q.c) score++; });
+
+  const lvl = LEVELS[currentLevelIndex];
+  const p = progress[lvl.id] || {bestScore:0, attempts:0};
+  const wasUnlockedBefore = p.bestScore >= PASS_THRESHOLD;
+  p.attempts = (p.attempts||0) + 1;
+  p.bestScore = Math.max(p.bestScore||0, score);
+  progress[lvl.id] = p;
+  saveProgress();
+
+  const passed = score >= PASS_THRESHOLD;
+  const nextIdx = currentLevelIndex + 1;
+  const unlockedNext = passed && !wasUnlockedBefore && nextIdx < LEVELS.length;
+
+  const app = document.getElementById('app');
+  app.innerHTML = `
+    <div class="result">
+      <div class="stamp ${passed ? 'pass' : 'fail'}"><span>${passed ? 'RÉUSSI' : 'À REFAIRE'}</span></div>
+      <h2>${passed ? 'Bravo, seuil atteint !' : 'Pas encore, mais tu progresses.'}</h2>
+      <p class="score">${timeUp ? '⏱ Temps écoulé — ' : ''}Score : <strong>${score} / ${currentQuestions.length}</strong> (seuil de réussite : ${PASS_THRESHOLD}/20)</p>
+      ${unlockedNext ? `<p class="score">🔓 Niveau ${nextIdx+1} débloqué : ${LEVELS[nextIdx].title}</p>` : ''}
+      <div class="result-actions">
+        <button class="btn ghost" onclick="renderHome()">Retour aux niveaux</button>
+        <button class="btn" onclick="startLevel(${currentLevelIndex})">Recommencer ce niveau</button>
+        ${passed && nextIdx < LEVELS.length ? `<button class="btn" onclick="startLevel(${nextIdx})">Niveau suivant</button>` : ''}
+      </div>
+    </div>
+  `;
+}
+
+renderHome();
+</script>
+</body>
+</html>
